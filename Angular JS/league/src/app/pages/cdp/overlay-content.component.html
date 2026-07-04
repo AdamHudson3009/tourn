@@ -1,0 +1,79 @@
+<div class="overlay-content">
+  <h2>Add Here!</h2>
+  <p>Passed Parameter: {{ data?.tournId }}</p>
+
+<form [formGroup]="cdpForm">
+    <label>
+      <input type="radio" formControlName="cdpControl" value="Add Conf"/> Add Conf
+    </label>
+    <label>
+      <input type="radio" formControlName="cdpControl" value="Add Divi"/> Add Divi
+    </label>
+    <label>
+      <input type="radio" formControlName="cdpControl" value="Add Plyrtm"/>Add Plyrtm
+    </label><br/>
+
+    <!--<button *ngIf="cdpForm.value.cdpControl !==''" (click)="add_row()">{{cdpForm.value.cdpControl}}</button><br/>-->
+
+    <span *ngIf="cdpForm.get('cdpControl')?.value === 'Add Conf'">
+      <button type="button" (click)="add_row('conf')">Add Row</button>
+      <div formArrayName="rows">
+        <div *ngFor="let control of rows.controls; let i = index" [formGroupName]="i">
+          <input type="text" formControlName="value">&nbsp;&nbsp;
+          <mat-icon (click)="delete_row(i)">delete</mat-icon>
+        </div>
+      </div>
+      <button type="button" (click)="add_cdp('conf', 'tourn_id', data?.tournId)">Submit</button>
+    </span>
+
+    <span *ngIf="cdpForm.get('cdpControl')?.value === 'Add Divi'">
+      conf &nbsp;&nbsp;<select formControlName="selectedConfs" id="dropdown">
+        <option [ngValue]="0">-- Select --</option>
+        <option *ngFor="let conf of dropdownConf" [ngValue]="conf.id">{{ conf.description }}</option>
+      </select><br/>
+      <span *ngIf="cdpForm.get('selectedConfs')?.value !== 0">
+        <button type="button" (click)="add_row('divi')">Add Row</button>
+        <div formArrayName="rows">
+          <div *ngFor="let control of rows.controls; let i = index" [formGroupName]="i">
+            <input type="text" formControlName="value">&nbsp;&nbsp;
+            <mat-icon (click)="delete_row(i)">delete</mat-icon>
+          </div>
+        </div>
+        <button type="button" (click)="add_cdp('divi', 'conf_id', cdpForm.get('selectedConfs')?.value)">Submit</button>
+      </span>
+    </span>
+
+    <span *ngIf="cdpForm.get('cdpControl')?.value === 'Add Plyrtm'">
+      conf &nbsp;&nbsp;<select formControlName="selectedConfs" (change)="onSelectChange($event)" [disabled]="false" id="dropdown">
+        <option [ngValue]="0">-- Select --</option>
+        <option *ngFor="let conf of dropdownConf" [ngValue]="conf.id">{{ conf.description }}</option>
+      </select><br/>
+      <span *ngIf="cdpForm.get('selectedConfs')?.value !== 0">
+
+        divi &nbsp;&nbsp;<select formControlName="selectedDivis" id="dropdown">
+          <option [ngValue]="0">-- Select --</option>
+          <option *ngFor="let divi of dropdownDivi" [ngValue]="divi.id">{{ divi.description }}</option>
+        </select><br/>
+        <span *ngIf="cdpForm.get('selectedDivis')?.value !== 0">
+
+          <button type="button" (click)="add_row('plyrtm')">Add Row</button>
+          <div formArrayName="rows">
+            <div *ngFor="let control of rows.controls; let i = index" [formGroupName]="i">
+              <input type="text" formControlName="value">&nbsp;&nbsp;
+              <input type="text" formControlName="value2">&nbsp;&nbsp;
+              <mat-icon (click)="delete_row(i)">delete</mat-icon>
+            </div>
+          </div>
+          <button type="button" (click)="add_cdp('plyrtm', 'divi_id', cdpForm.get('selectedDivis')?.value)">Submit</button>
+        </span>
+      </span>
+    </span>
+   
+    
+    
+
+    
+
+</form>
+<button (click)="close()">Close</button>
+</div>

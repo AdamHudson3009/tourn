@@ -1,0 +1,182 @@
+<div class="margin-box"></div>
+<h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav>{{leagueName}} -- {{tournName}}</h3>
+
+
+    <select [(ngModel)]="rndSelect">
+      <option *ngFor="let item of [].constructor(maxRnd); let rnd = index" [value]="rnd + 1">{{rnd+1}}</option>
+  </select>&nbsp;&nbsp;
+  <select [(ngModel)]="rndType">
+      <option value="1">sch</option>
+      <option value="2">schres</option>
+      <option value="3">stnds</option>
+      <option value="4">ooo</option>
+      <option value="5">gms</option>
+  </select>&nbsp;&nbsp;
+  <a *ngIf="rndType==1" [routerLink]="['/sch', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd]">sch {{rndSelect}}</a>
+  <a *ngIf="rndType==2" (click)="reload(rndSelect, 'schres')">schres {{rndSelect}}</a>
+  <a *ngIf="rndType==3" (click)="reload(rndSelect, 'stnds')">stnds {{rndSelect}}</a>
+  <a *ngIf="rndType==4" (click)="reload(rndSelect, 'ooo')">ooo {{rndSelect}}</a>
+  <a *ngIf="rndType==5" (click)="reload(rndSelect, 'gms')">gms {{rndSelect}}</a>
+  <br/><br/>
+
+  <h3>{{resStndOoo}}</h3>
+
+<!--sch res-->
+<ng-container *ngIf="resStndOoo=='schres'">
+  <table><tbody>
+    <ng-container *ngFor="let conf of data.confs">
+      <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
+      <ng-container *ngFor="let divi of conf.divis">
+        <tr><td><span class="divi-class">{{divi.divi}}</span></td></tr>
+        <tr><td *ngFor="let header of divi.headers">
+          <span class="header-class">{{header}}</span>
+        </td></tr>
+        <tr *ngFor="let plyrtm of divi.plyrtms">
+          <td>{{plyrtm.rnk}}</td>
+          <td>{{plyrtm.plyrtm}}</td>
+          <td *ngFor="let column of plyrtm.columns">{{column}}</td>
+        </tr>
+      </ng-container>
+    </ng-container>
+  </tbody></table>
+</ng-container>
+
+<!--stnd-->
+<ng-container *ngIf="resStndOoo=='stnds'">
+  <table><tbody>
+    <ng-container *ngFor="let conf of data.conf_stnd">
+      <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
+      <ng-container *ngIf="conf.cn && (conf.cn.length > 0)">
+        <tr><td><span class="divi-class">CN</span></td></tr>
+        <tr *ngFor="let a1 of conf.cn">
+          <td>{{a1.rnk}}</td>
+          <td>{{a1.name}}</td>
+          <td>{{a1.rec}}</td>
+          <td><ng-container *ngFor="let col of a1.g_fields">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+          <td><ng-container *ngFor="let col of a1.dv_rsn">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+          <td><ng-container *ngFor="let col of a1.cn_rsn">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+        </tr>
+      </ng-container>
+      <ng-container *ngIf="conf.dv && (conf.dv.length > 0)">
+        <tr><td><span class="divi-class">DV</span></td></tr>
+        <tr *ngFor="let a1 of conf.dv">
+          <td>{{a1.rnk}}</td>
+          <td>{{a1.name}}</td>
+          <td>{{a1.rec}}</td>
+          <td><ng-container *ngFor="let col of a1.g_fields">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+          <td><ng-container *ngFor="let col of a1.dv_rsn">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+          <td><ng-container *ngFor="let col of a1.cn_rsn">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+        </tr>
+      </ng-container>
+      <ng-container *ngIf="conf.wc && (conf.wc.length > 0)">
+        <tr><td><span class="divi-class">WC</span></td></tr>
+        <tr *ngFor="let a1 of conf.wc">
+          <td>{{a1.rnk}}</td>
+          <td>{{a1.name}}</td>
+          <td>{{a1.rec}}</td>
+          <td><ng-container *ngFor="let col of a1.g_fields">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+          <td><ng-container *ngFor="let col of a1.dv_rsn">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+          <td><ng-container *ngFor="let col of a1.cn_rsn">
+            <ng-container *ngIf="col !== ''">
+                {{col}}<br/>
+            </ng-container>
+          </ng-container></td>
+        </tr>
+      </ng-container>
+    </ng-container>
+  </tbody></table>
+</ng-container>
+
+<!--ooo-->
+<ng-container *ngIf="resStndOoo=='ooo'">
+  <table><tbody>
+    <ng-container *ngFor="let conf of data.conf_ooo">
+      <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
+      <ng-container *ngFor="let divi of conf.divi_ooo">
+        <tr><td><span class="divi-class">{{divi.divi}} {{divi.plyrtm_ooo.length}}</span></td></tr>
+        <ng-container *ngFor="let plyrtm of divi.plyrtm_ooo">
+          <tr><td><span class="header-class">{{plyrtm.plyrtm}}</span></td></tr>
+          <tr *ngIf="plyrtm.wn && (plyrtm.wn.length>0)">
+            <td>W</td>
+            <td *ngFor="let wn1 of plyrtm.wn">
+              {{wn1}}
+            </td>
+          </tr>
+          <tr *ngIf="plyrtm.ls && (plyrtm.ls.length>0)">
+            <td>L</td>
+            <td *ngFor="let ls1 of plyrtm.ls">
+              {{ls1}}
+            </td>
+          </tr>
+          <tr *ngIf="plyrtm.tie && (plyrtm.tie.length>0)">
+            <td>T</td>
+            <td *ngFor="let t1 of plyrtm.tie">
+              {{t1}}
+            </td>
+          </tr>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </tbody></table>
+</ng-container>
+
+<!--gms-->
+<ng-container *ngIf="resStndOoo=='gms'">
+  <table><tbody>
+    <ng-container *ngFor="let conf of data.conf_gms">
+      <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
+      <tr *ngFor="let plyrtm of conf.plyrtm_gms">
+        <td>{{plyrtm.plyrtm}}</td>
+        <td>{{plyrtm.wn}}</td>
+        <td *ngFor="let wns1 of plyrtm.wns">{{wns1}}</td>
+        <td *ngFor="let rem of plyrtm.remain">{{rem}}</td>
+        <ng-container *ngIf="plyrtm.w && plyrtm.w.length>0 && plyrtm.w[0] !== ''">
+          <td><span class="header-class">W</span></td>
+          <td *ngFor="let w1 of plyrtm.w">{{w1}}</td>
+        </ng-container>
+        <ng-container *ngIf="plyrtm.l && plyrtm.l.length>0 && plyrtm.l[0] !== ''">
+          <td><span class="header-class">L</span></td>
+          <td *ngFor="let l1 of plyrtm.l">{{l1}}</td>
+        </ng-container>
+        <ng-container *ngIf="plyrtm.t && plyrtm.t.length>0 && plyrtm.t[0] !== ''">
+          <td><span class="header-class">T</span></td>
+          <td *ngFor="let t1 of plyrtm.t">{{t1}}</td>
+        </ng-container>
+      </tr>
+    </ng-container>
+  </tbody></table>
+</ng-container>
+
+<br/><br/><br/><br/><br/><br/>

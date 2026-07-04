@@ -1,0 +1,57 @@
+<h2>Grammar</h2>
+
+<ng-container *ngIf="grammarInfo.length === 0;">
+    <h3>Copy From {{tournSelect.length}}</h3><select [(ngModel)]="fromTrnId">
+        <option *ngFor="let trn of tournSelect" [value]="trn.tourn_id">{{trn.tourn}}</option>
+    </select>
+    <button (click)="copy_from(fromTrnId)">Copy From</button>
+    <br/><br/>  
+    <!--<button (click)="openFileDialog()">Select File</button>-->
+    <!-- hidden file input -->
+    <!-- <input type="file" #fileInput style="display:none" (change)="onFileSelected($event)"/>-->   
+</ng-container>
+<ng-container *ngIf="leagueName === 'NFL';">
+    <button (click)="import_file('C:\\Go\\trnsch\\trn\\nfl-sched.txt')">Import</button>
+</ng-container>
+<br/><br/> 
+
+<table><tbody>
+    <ng-container *ngFor="let gram of grammarInfo; let i = index">
+        <tr *ngIf="(gramEdit === i);else elseGram">
+            <td><input type="text" class="letter-style" [(ngModel)]="gram.letters" (ngModelChange)="changeFreeze=true;" placeholder="Enter letters"></td>
+            <td><select [(ngModel)]="gram.dv1_id">
+                <option *ngFor="let divi of diviInfo" [value]="divi.did">{{divi.conf}} {{divi.divi}}</option>
+            </select></td>
+            <td><select [(ngModel)]="gram.dv2_id">
+                <option *ngFor="let divi of diviInfo" [value]="divi.did">{{divi.conf}} {{divi.divi}}</option> 
+            </select></td>
+            <td><button (click)="change(gram.id,gram.letters,gram.dv1_id,gram.dv2_id)">Change</button>&nbsp;&nbsp;
+            <button (click)="cancel()">Cancel</button>&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;<mat-icon (click)="delete(gram.id)">delete</mat-icon>
+            </td>
+        </tr>
+        <ng-template #elseGram>
+            <tr>
+                <td><a (click)="edit_area(i)"><span class="gram-style">{{gram.letters}}</span></a></td>
+                <td><a (click)="edit_area(i)"><span class="gram-style">{{gram.conf1}} {{gram.divi1}}</span></a></td>
+                <td><a (click)="edit_area(i)"><span class="gram-style">{{gram.conf2}} {{gram.divi2}}</span></a></td>
+            </tr>
+        </ng-template>
+    </ng-container>
+    <tr>
+        <td *ngIf="(gramEdit !== grammarInfo.length);else elseDescA">
+            <button><a (click)="edit_area(grammarInfo.length)">+</a></button>
+        </td>
+        <ng-template #elseDescA>
+            <td><input type="text" class="letter-style" [(ngModel)]="letterAdd" (ngModelChange)="changeFreeze=true;" placeholder="Enter letters"></td>
+            <td><select [(ngModel)]="divi1Add">
+                <option *ngFor="let divi of diviInfo" [value]="divi.did">{{divi.conf}} {{divi.divi}}</option>
+            </select></td>
+            <td><select [(ngModel)]="divi2Add">
+                <option *ngFor="let divi of diviInfo" [value]="divi.did">{{divi.conf}} {{divi.divi}}</option>
+            </select></td>
+            <button (click)="add()">Add</button>
+            <button (click)="cancel()">Cancel</button>
+        </ng-template>
+    </tr>
+</tbody></table>

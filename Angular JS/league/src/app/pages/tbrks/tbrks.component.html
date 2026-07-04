@@ -1,0 +1,61 @@
+<h2>tbrk</h2>
+
+<ng-container *ngIf="tbrks.length === 0;">
+    <h3>Copy From</h3><select [(ngModel)]="fromTrnId">
+        <option *ngFor="let trn of tournSelect" [value]="trn.tourn_id">{{trn.tourn}}</option>
+    </select>
+    <button (click)="copy_from(fromTrnId)">Copy From</button>
+    <br/><br/>    
+</ng-container>
+
+<table><tbody>
+    <ng-container *ngFor="let tbrk1 of tbrks; let i = index">
+        <tr>
+            <td *ngIf="(dcoEdit === i);else elseTbrk">
+                <input type="text" class="trn-bold-text" [(ngModel)]="tbrk1.dv_cn_other" (ngModelChange)="changeFreeze=true;" placeholder="Enter dv cn or other"><br/>
+                <button (click)="change_dco(i,tbrk1.dv_cn_other)">Change</button><br/>
+                <button (click)="cancel(i)">Cancel</button>&nbsp;&nbsp;
+            </td>
+            <ng-template #elseTbrk>
+                <td><a (click)="edit_area(i,-1,-1)"><span class="trn-bold-style">{{tbrk1.dv_cn_other}}</span></a></td>
+            </ng-template>
+            <ng-container *ngFor="let des of tbrk1.tbDesc; let i2 = index">
+                <td *ngIf="(descDcoEdit === i) && (descEdit === i2);else elseDescr">
+                    <mat-icon *ngIf="i2>0" (click)="rnk_swap(i,des.id,true)">keyboard_arrow_left</mat-icon>
+                    {{des.rnk}}
+                    <mat-icon *ngIf="i2 < (tbrk1.tbDesc.length-1)" (click)="rnk_swap(i,des.id,false)">keyboard_arrow_right</mat-icon>
+                    &nbsp;&nbsp;&nbsp;<mat-icon (click)="delete_desc(des.id,tbrk1.dv_cn_other,des.description)">delete</mat-icon><br/>
+                    <input type="text" class="trn-text" [(ngModel)]="des.description" (ngModelChange)="changeFreeze=true;" placeholder="Enter description"><br/>
+                    <button (click)="change_desc(des.id,tbrk1.dv_cn_other,des.description)">Change</button><br/>
+                    <button (click)="cancel(i,i2)">Cancel</button>
+                </td>
+                <ng-template #elseDescr>
+                    <td><a (click)="edit_area(-1,i,i2)"><span class="trn-style">{{des.description}}</span></a></td>
+                </ng-template>
+            </ng-container>  
+            
+            <td>
+                <button *ngIf="(descDcoEdit !== i) || (descEdit !== tbrk1.tbDesc.length);else elseDescA">
+                    <a (click)="edit_area(-1,i,tbrk1.tbDesc.length)">+</a>
+                </button>
+                <ng-template #elseDescA>
+                    <input type="text" class="trn-text" placeholder="Enter tbrk" (ngModelChange)="changeFreeze=true;" [(ngModel)]="descAdd">&nbsp;&nbsp;
+                    <button (click)="add_desc(tbrk1.dv_cn_other,descAdd)">Add</button>
+                    <button (click)="cancel(i,tbrk1.tbDesc.length)">Cancel</button>
+                </ng-template>
+            </td>
+            
+        </tr>
+    </ng-container>
+    <tr><td><span class="trn-bold-style">Add Row</span>&nbsp;&nbsp;</td><td>
+        <button *ngIf="(dcoEdit !== tbrks.length);else elseDcoA">
+            <a (click)="edit_area(tbrks.length,-1,-1)">+</a>
+        </button>
+        <ng-template #elseDcoA>
+            <input type="text" class="trn-text" placeholder="Enter dv cn or other" (ngModelChange)="changeFreeze=true;" [(ngModel)]="dcoAdd">&nbsp;&nbsp;
+            <input type="text" class="trn-text" placeholder="Enter description" (ngModelChange)="changeFreeze=true;" [(ngModel)]="descAdd">&nbsp;&nbsp;
+            <button (click)="add_dco(dcoAdd,descAdd)">Add</button>&nbsp;
+            <button (click)="cancel(tbrks.length)">Cancel</button>
+        </ng-template>
+    </td></tr>
+</tbody></table>

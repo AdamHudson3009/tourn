@@ -1,0 +1,20 @@
+<div class="margin-box"></div>
+<h3 class="h3-style">{{ title }}</h3>
+
+
+<input type="text" placeholder="Enter League" [(ngModel)]="newLeague">
+<button (click)="add_league()" [disabled]="!newLeague.trim()">Add League</button>
+<table class="table-style">
+<tbody>
+  <tr *ngFor="let item of leagues">
+    <td>&diams;</td>
+    <td><mat-icon (click)="click_change(item.id)">edit</mat-icon></td>
+    <td><nav><a [routerLink]="['/tourn', item.id, item.description]">{{ item.description }}</a></nav></td>
+    <td><mat-icon (click)="delete_league(item.id,item.description)">delete</mat-icon></td>
+    <td *ngIf="clickedChange===item.id"><input type="text" placeholder="Change League" [(ngModel)]="changeLeague"><button (click)="change_league(item.id)">Change</button><button (click)="click_change(0)">Cancel</button></td>
+  </tr>
+</tbody>
+</table>
+<router-outlet></router-outlet>
+
+

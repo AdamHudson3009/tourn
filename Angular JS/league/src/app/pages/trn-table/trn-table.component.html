@@ -1,0 +1,105 @@
+<div class="margin-box"></div>
+<h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav></h3>
+
+<a [routerLink]="['/trnsch', leagueId, leagueName, tournId, tournName]">trnsch</a>
+
+<div class="cdp-container">
+    <div class="cdp-left">
+<table><tbody>
+    <ng-container *ngFor="let conf of conDivPlr; let i = index">
+        <tr>
+            <td><span class="conf-style">Conf</span>&nbsp;&nbsp;</td>
+            <td *ngIf="(confEdit === i);else elseConf">
+                <input type="text" [(ngModel)]="conf.conf" (ngModelChange)="changeFreeze=true;" placeholder="Enter conf">&nbsp;&nbsp;
+                <button (click)="change_cdp('conf','tourn_id',conf.cid,conf.conf)">Change</button>&nbsp;&nbsp;
+                <button (click)="cancel_cdp('conf',i)">Cancel</button>&nbsp;&nbsp;
+                <mat-icon *ngIf="conf.divis.length === 0" (click)="delete_cdp('conf','tourn_id',conf.cid,conf.conf)">delete</mat-icon>
+            </td>
+            <ng-template #elseConf><td><a (click)="edit_area(i,-1,-1)"><span class="conf-style">{{conf.conf}}</span></a></td></ng-template>           
+        </tr>
+        
+        <ng-container *ngFor="let divi of conf.divis;let i2 = index">
+            <tr>
+                <td><span class="div-style">Divi</span>&nbsp;&nbsp;</td>
+                <td *ngIf="(confDiviEdit === i) && (diviEdit === i2);else elseDivi">
+                    <input type="text" [(ngModel)]="divi.divi" (ngModelChange)="changeFreeze=true;" placeholder="Enter divi">&nbsp;&nbsp;
+                    <button (click)="change_cdp('divi','conf_id',divi.did,divi.divi)">Change</button>&nbsp;&nbsp;
+                    <button (click)="cancel_cdp('divi',i,i2)">Cancel</button>&nbsp;&nbsp;
+                    <mat-icon *ngIf="divi.plyrtms.length === 0" (click)="delete_cdp('divi','conf_id',divi.did,divi.divi)">delete</mat-icon>
+                </td>
+                <ng-template #elseDivi><td><a (click)="edit_area(-1,i,i2)"><span class="div-style">{{divi.divi}}</span></a></td></ng-template>
+            </tr>
+            <tr>
+                <td><span class="plyr-style">Plyrs</span>&nbsp;&nbsp;</td>
+                <td></td>
+                <ng-container *ngFor="let plyt of divi.plyrtms;let i3 = index">
+                    <td *ngIf="(confPlyrEdit === i) && (diviPlyrEdit === i2) && (plyrEdit === i3);else elsePlyr">
+                        <mat-icon *ngIf="i3>0" (click)="sds_swap(plyt.pid,true)">keyboard_arrow_left</mat-icon>
+                        {{plyt.sds}}
+                        <mat-icon *ngIf="i3 < (divi.plyrtms.length-1)" (click)="sds_swap(plyt.pid,false)">keyboard_arrow_right</mat-icon>
+                        &nbsp;&nbsp;&nbsp;<mat-icon (click)="delete_plyrtm(plyt.pid,plyt.plyrtm)">delete</mat-icon><br/>
+                        <input type="text" [(ngModel)]="plyt.plyrtm" (ngModelChange)="changeFreeze=true;" placeholder="Enter plyrtm"><br/>
+                        <button (click)="change_plyrtm(plyt.pid,divi.did,plyt.plyrtm)">Change</button>&nbsp;&nbsp;
+                        <button (click)="cancel_cdp('plyrtm',i,i2,i3)">Cancel</button>&nbsp;&nbsp;
+                        <!--<button (click)="change_cdp('divi','conf_id',divi.did,divi.divi)">Change</button>&nbsp;&nbsp;
+                        <button (click)="cancel_cdp('divi',i,i2)">Cancel</button>&nbsp;&nbsp;
+                        <mat-icon (click)="delete_cdp('divi','conf_id',divi.did,divi.divi)">delete</mat-icon>
+                        -->
+                    </td>
+                    <ng-template #elsePlyr>
+                        <td><a (click)="edit_area(-1,-1,-1,i,i2,i3)"><span class="plyr-style">{{plyt.plyrtm}}</span></a></td>
+                    </ng-template>
+                </ng-container>
+                
+                <td>
+                    <button *ngIf="(confPlyrEdit !== i) || (diviPlyrEdit !== i2) || (plyrEdit !== divi.plyrtms.length);else elsePlyrA">
+                        <a (click)="edit_area(-1,-1,-1,i,i2,divi.plyrtms.length)">+</a>
+                    </button>
+                    <ng-template #elsePlyrA>
+                        <input type="text" placeholder="Enter plyr" (ngModelChange)="changeFreeze=true;" [(ngModel)]="plyrAdd">&nbsp;&nbsp;
+                        <button (click)="add_plyrtm(divi.did,plyrAdd)">Add</button>
+                        <button (click)="cancel_add()">Cancel</button>
+                    </ng-template>
+                </td>
+            </tr>
+        </ng-container>
+        <tr><td><span class="div-style">Divi</span>&nbsp;&nbsp;</td><td>
+            <button *ngIf="(confDiviEdit !== i) || (diviEdit !== conf.divis.length);else elseDiviA">
+                <a (click)="edit_area(-1,i,conf.divis.length)">+</a>
+            </button>
+            <ng-template #elseDiviA>
+                <input type="text" placeholder="Enter divi" (ngModelChange)="changeFreeze=true;" [(ngModel)]="diviAdd">&nbsp;&nbsp;
+                <button (click)="add_cdp('divi','conf_id',diviAdd,conf.cid)">Add</button>
+                <button (click)="cancel_add()">Cancel</button>
+            </ng-template>
+        </td></tr>
+    </ng-container>
+    <tr><td><span class="conf-style">Conf</span>&nbsp;&nbsp;</td><td>
+        <button *ngIf="(confEdit !== conDivPlr.length);else elseConfA">
+            <a (click)="edit_area(conDivPlr.length,-1,-1)">+</a>
+        </button>
+        <ng-template #elseConfA>
+            <input type="text" placeholder="Enter conf" (ngModelChange)="changeFreeze=true;" [(ngModel)]="confAdd">&nbsp;&nbsp;
+            <button (click)="add_cdp('conf','tourn_id',confAdd,tournId)">Add</button>
+            <button (click)="cancel_add()">Cancel</button>
+        </ng-template>
+    </td></tr>
+</tbody></table>
+
+</div>
+<div class="cdp-right">
+    
+<a [routerLink]="['/tbrks', tournId]" (click)="showRightNum = 1">tbrks</a>&nbsp;&nbsp;
+<a [routerLink]="['/cmm', tournId]" (click)="showRightNum = 2">cmm</a>&nbsp;&nbsp;
+<a [routerLink]="['/grammar', tournId]" (click)="showRightNum = 3">grammar</a>&nbsp;&nbsp;
+<a [routerLink]="['/sch-builder', tournId]" (click)="showRightNum = 4">sch builder</a>&nbsp;&nbsp;
+<a [routerLink]="['/lll-consolidated', tournId]" (click)="showRightNum = 5">sch Xtra</a>&nbsp;&nbsp;
+<a href="#" (click)="showRightNum = 0; $event.preventDefault()">none</a>
+
+    <app-tbrks *ngIf="showRightNum === 1"></app-tbrks>
+    <app-cmm *ngIf="showRightNum === 2"></app-cmm> 
+    <app-grammar *ngIf="showRightNum === 3"></app-grammar>    
+    <app-sch-builder *ngIf="showRightNum === 4"></app-sch-builder>
+    <app-lll-consolidated *ngIf="showRightNum === 5"></app-lll-consolidated>    
+</div>
+</div>

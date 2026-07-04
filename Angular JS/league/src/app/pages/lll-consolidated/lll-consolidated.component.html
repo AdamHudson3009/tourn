@@ -1,0 +1,42 @@
+<h2>Sch Xtra</h2>
+
+<ng-container *ngIf="xtraInfo.length === 0;">
+    <h3>Copy From</h3><select [(ngModel)]="fromTrnId">
+        <option *ngFor="let trn of tournSelect" [value]="trn.tourn_id">{{trn.tourn}}</option>
+    </select>
+    <button (click)="copy_from(fromTrnId)">Copy From</button>
+    <br/><br/>    
+</ng-container>
+
+<table><tbody>
+    <ng-container *ngFor="let xtra of xtraInfo; let i = index">
+        <ng-container *ngIf="(xtraEdit === i);else elseXtra">
+            <tr>
+                <td>
+                    <mat-icon *ngIf="i>0" (click)="ordr_swap(i,xtra.id,true)">keyboard_arrow_up</mat-icon>
+                    <mat-icon *ngIf="i < (xtraInfo.length-1)" (click)="ordr_swap(i,xtra.id,false)">keyboard_arrow_down</mat-icon>
+                </td>
+                <td><input type="text" class="xtra-text" [(ngModel)]="xtra.description" (ngModelChange)="changeFreeze=true;"></td>
+                <td><button (click)="change_xtra(i)">Change</button></td>
+                <td><button (click)="cancel(i)">Cancel</button></td>
+                <td><mat-icon (click)="delete_xtra(i)">delete</mat-icon></td>
+            </tr>
+        </ng-container>
+        <ng-template #elseXtra>
+            <tr (click)="edit_area(i)">
+                <td colspan="3"class="xtra-style">{{xtra.description}}</td>
+            </tr>
+        </ng-template>
+    </ng-container>          
+        
+    <tr *ngIf="(xtraEdit !== xtraInfo.length);else elseSchA">
+        <td><button><a (click)="edit_area(xtraInfo.length)">+</a></button></td>
+    </tr>        
+    <ng-template #elseSchA>
+        <tr>
+            <td><input type="text" class="xtra-text" [(ngModel)]="xtraAdd" (ngModelChange)="changeFreeze=true;" /></td>
+            <td><button (click)="add_xtra()">Add</button></td>
+            <td><button (click)="cancel(xtraInfo.length)">Cancel</button></td>
+        </tr>
+    </ng-template>
+</tbody></table>

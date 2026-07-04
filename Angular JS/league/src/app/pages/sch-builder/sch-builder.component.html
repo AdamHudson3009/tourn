@@ -1,0 +1,64 @@
+<h2>Sch Builder</h2>
+
+<table><tbody>
+    <tr class="sch-bold-style"><td>Rnd</td><td>Rpt</td><td>Gra</td><td>Sds</td></tr>
+    <ng-container *ngFor="let sch of schInfo; let i = index">
+        <ng-container *ngIf="(schEdit === i);else elseSch">
+            <tr>
+                <td><input type="number" [(ngModel)]="sch.rnd" (ngModelChange)="changeFreeze=true;" min="0" max="100" step="1" /></td>
+                <td><input type="text" class="sch-text" [(ngModel)]="sch.rpt" (ngModelChange)="changeFreeze=true;"></td>
+                <td><select [(ngModel)]="sch.gid" (ngModelChange)="lettersSelected(i);">
+                    <option *ngFor="let letters of lettersInfo" [value]="letters.gid">{{letters.letters}}</option>
+                </select></td>
+                <td><input type="checkbox" [(ngModel)]="sch.HasStnd" (ngModelChange)="changeFreeze=true;"></td>
+                <td><button (click)="change_sch(i)">Change</button></td>
+                <td><button (click)="cancel(i)">Cancel</button></td>
+                <td><mat-icon (click)="delete_sch(i)">delete</mat-icon></td>
+            </tr>
+            <tr *ngFor="let schSds of sch.schSdsInfo; let i2 = index">
+                <td><input type="number" [(ngModel)]="schSds.sd1" (ngModelChange)="changeFreeze=true;" min="1" max="100" step="1" /></td>
+                <td>-</td>
+                <td><input type="number" [(ngModel)]="schSds.sd2" (ngModelChange)="changeFreeze=true;" min="1" max="100" step="1" /></td>
+                <td><mat-icon (click)="delete_sds(i,i2)">delete</mat-icon></td>
+            </tr> 
+            <tr>
+                <td><button (click)="add_sds(i)">+</button></td>
+            </tr>
+        </ng-container>
+        <ng-template #elseSch>
+            <tr (click)="edit_area(i)">
+                <td class="trn-bold-style">{{sch.rnd}}</td>
+                <td class="trn-style">{{sch.rpt}}</td>
+                <td class="trn-style">{{sch.letters}}</td>
+                <td *ngIf="sch.HasStnd" class="trn-style">stnd</td>
+                <td *ngIf="!sch.HasStnd" class="trn-style">(no stnd)</td>
+                <td *ngFor="let schSds of sch.schSdsInfo">{{schSds.sd1}}-{{schSds.sd2}}</td>
+            </tr>
+        </ng-template>
+    </ng-container>          
+        
+    <tr *ngIf="(schEdit !== schInfo.length);else elseSchA">
+        <td><button><a (click)="edit_area(schInfo.length)">+</a></button></td>
+    </tr>        
+    <ng-template #elseSchA>
+        <tr>
+            <td><input type="number" [(ngModel)]="rndAdd" (ngModelChange)="changeFreeze=true;" min="0" max="100" step="1" /></td>
+            <td><input type="text" class="sch-text" [(ngModel)]="rptAdd" (ngModelChange)="changeFreeze=true;"></td>
+            <td><select [(ngModel)]="gidAdd" (ngModelChange)="changeFreeze=true;">
+                <option *ngFor="let letters of lettersInfo" [value]="letters.gid">{{letters.letters}}</option>
+            </select></td>
+            <td><input type="checkbox" class="sch-text" [(ngModel)]="HasStndAdd" (ngModelChange)="changeFreeze=true;"></td>
+            <td><button (click)="add_sch()">Add</button></td>
+            <td><button (click)="cancel(schInfo.length)">Cancel</button></td>
+        </tr>
+        <tr *ngFor="let sdsAdd1 of sdsAdd; let i2 = index">
+            <td><input type="number" [(ngModel)]="sdsAdd1.sd1" min="1" max="100" step="1" /></td>
+            <td>-</td>
+            <td><input type="number" [(ngModel)]="sdsAdd1.sd2" min="1" max="100" step="1" /></td>
+            <td><mat-icon (click)="delete_sds(schInfo.length,i2)">delete</mat-icon></td>
+        </tr> 
+        <tr>
+            <td><button (click)="add_sds(schInfo.length)">+</button></td>
+        </tr>
+    </ng-template>
+</tbody></table>

@@ -1,0 +1,18 @@
+<h2>cmm</h2>
+
+<table><tbody>
+    <ng-container *ngFor="let cmm1 of cmmInfo; let i = index">
+        <tr>
+            <td><h3>{{cmm1.conf}}</h3></td>
+        </tr>
+        <tr><td><b>Divi</b></td><td><b>Conf Comm</b></td><td><b>i Comm</b></td></tr>
+        <tr *ngFor="let divi of cmm1.diviInfo; let i2 = index">
+            <td>{{divi.divi}}</td>
+            <td><input type="number" [(ngModel)]="divi.conf_num" min="0" max="99" step="1" /></td>
+            <td><input type="number" [(ngModel)]="divi.i_num" min="0" max="99" step="1" /></td>
+        </tr>
+    </ng-container>
+</tbody></table>
+<br/>
+<button (click)="change()">Change</button>&nbsp;
+<button (click)="cancel()">Cancel</button>

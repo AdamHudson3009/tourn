@@ -1,0 +1,39 @@
+.grid-header, .grid-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 3fr 3fr 3fr 1fr 1fr 1fr 2fr 25fr;
+    gap: 5px;
+    margin-bottom: 8px;
+    align-items: left;
+  }
+
+  .grid-header {
+    font-weight: bold;
+    background: #eaeaea;
+    padding: 8px;
+    border-radius: 4px;
+  }
+  
+  .grid-row {
+    background: #fdfdfd;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .cdp-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+  
+.cdp-left {
+   flex: 2;
+   padding-right: 20px;
+}
+  
+.cdp-right {
+   flex: 1;
+   border-left: 1px solid #ccc;
+   padding-left: 20px;
+   max-width: 600px; /* optional */
+}

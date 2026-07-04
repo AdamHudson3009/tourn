@@ -1,0 +1,19 @@
+<div class="margin-box"></div>
+<h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- {{ leagueName }}</nav></h3>
+
+<table><thead><td colspan='2'></td><td><b>Tourns</b></td><td><button (click)="add_row()">Add Row</button></td></thead>
+<tbody>
+<tr *ngFor="let item of tourns">
+    <td>&diams;</td>
+    <td><mat-icon (click)="click_change(item.id)">edit</mat-icon></td>
+    <td><nav><a [routerLink]="['/trn-table', leagueId, leagueName, item.id, item.description]">{{ item.description }}</a></nav></td>
+    <td><mat-icon (click)="delete_tourn(item.id,item.description)">delete</mat-icon></td>
+    <td *ngIf="clickedChange===item.id"><input type="text" placeholder="Change tourn" [(ngModel)]="changeTourn"><button (click)="change_tourn(item.id,changeTourn)">Change</button><button (click)="click_change(0)">Cancel</button></td>
+</tr>
+<tr *ngFor="let row of rows; let i = index">
+    <td colspan='2'>&diams;</td>
+    <td><input type="text" [(ngModel)]="row.value" placeholder="Enter tourn"></td>
+    <td><mat-icon (click)="delete_row(i)">delete</mat-icon></td>
+  </tr>
+<tr *ngIf="rows.length>0"><td colspan='2'></td><td><button (click)="add_tourns()">Add</button></td><td></td></tr>
+</tbody></table>

@@ -1,0 +1,44 @@
+.margin-box {
+    margin: 20px;
+}
+.h3-style {
+    text-align: left;
+    background-color: aqua;
+}
+.table-style {
+    border: "1"
+}
+.conf-style {
+    font-size: 1.2em; 
+    font-weight: bold;
+}
+.div-style {
+    margin-left: 1em;
+    font-size: 1.1em; 
+    font-weight: bold;
+    color: #555;
+  }
+.plyr-style {
+    margin-left: 1.3em;
+    font-size: 1em; 
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .cdp-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+  
+.cdp-left {
+   flex: 2;
+   padding-right: 20px;
+}
+  
+.cdp-right {
+   flex: 1;
+   border-left: 1px solid #ccc;
+   padding-left: 20px;
+   max-width: 600px; /* optional */
+}
