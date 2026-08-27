@@ -1,0 +1,6 @@
+@trn_HostAddress = http://localhost:5164
+
+GET {{trn_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

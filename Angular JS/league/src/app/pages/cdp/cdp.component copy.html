@@ -1,0 +1,21 @@
+<div class="margin-box"></div>
+<h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav></h3>
+
+<table><thead><td colspan='3'></td><td><b>Tourns</b></td><td><button (click)="add_row()">Add Row</button></td></thead>
+<tbody>
+<tr *ngFor="let item of condivplr;let i = index">
+    <td>&diams;</td>
+    <td *ngIf="!item.expand;else else1" (click)="expanding(i)">+</td>
+    <ng-template #else1><td (click)="contracting(i)">-</td></ng-template>
+    <td><mat-icon (click)="click_change(item.id)">edit</mat-icon></td>
+    <td>{{ item.description }}</td>
+    <td><mat-icon (click)="delete_conf(item.id,item.description)">delete</mat-icon></td>
+    <td *ngIf="clickedChange===item.id"><input type="text" placeholder="Change tourn" [(ngModel)]="changeConf"><button (click)="change_conf(item.id)">Change</button><button (click)="click_change(0)">Cancel</button></td>
+</tr>
+<tr *ngFor="let row of rows; let i = index">
+    <td colspan='2'>&diams;</td>
+    <td><input type="text" [(ngModel)]="row.value" placeholder="Enter tourn"></td>
+    <td><mat-icon (click)="delete_row(i)">delete</mat-icon></td>
+  </tr>
+<tr *ngIf="rows.length>0"><td colspan='2'></td><td><button (click)="add_confs()">Add</button></td><td></td></tr>
+</tbody></table>

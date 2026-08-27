@@ -1,0 +1,69 @@
+<div class="cdp-container">
+  <div class="cdp-left">
+    <div class="margin-box"></div>
+    <h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav></h3>
+
+    <p><button (click)="openOverlay()">Add Any</button></p>
+    
+    <p><b>Confs-Divis-Plyrtms</b> </p>
+
+    <div *ngFor="let item of condivplr;let i = index">
+      <span *ngIf="item.cdp==='c'">
+        &diams;
+        <span *ngIf="!item.expand;else else1" (click)="expanding(item.cdp,i,item.id,false)">+</span>
+        <ng-template #else1><span (click)="contracting(item.cdp,i)">-</span></ng-template>
+        <span><mat-icon (click)="click_change('c',item.id,item.description,true)">edit</mat-icon></span>&nbsp;{{ item.description }}
+        <span><mat-icon (click)="delete_conf('conf','tourn_id',item.id,item.description)">delete</mat-icon></span>
+        <span *ngIf="(clickedChange===item.id) && (this.clickedChangeCdp==='c')">
+          <input type="text" placeholder="Change conf" [(ngModel)]="changeCdp" value="{{item.description}}">
+          <button (click)="change_conf('conf','tourn_id',item.id)">Change</button>
+          <button (click)="click_change('c',0,'',false)">Cancel</button>
+        </span>
+      </span>
+      <span *ngIf="item.cdp==='d'">
+        ----&gt; &diams;
+        <span *ngIf="!item.expand;else else1" (click)="expanding(item.cdp,i,item.id,false)">+</span>
+        <ng-template #else1><span (click)="contracting(item.cdp,i)">-</span></ng-template>
+        <span><mat-icon (click)="click_change('d',item.id,item.description,true)">edit</mat-icon></span>&nbsp;{{ item.description }}
+        <span><mat-icon (click)="delete_conf('divi','conf_id',item.id,item.description)">delete</mat-icon></span>
+        <span *ngIf="(clickedChange===item.id) && (this.clickedChangeCdp==='d')">
+          <input type="text" placeholder="Change divi" [(ngModel)]="changeCdp">
+          <button (click)="change_conf('divi','conf_id',item.id)">Change</button>
+          <button (click)="click_change('d',0,'',false)">Cancel</button>
+        </span>
+      </span>
+      <span *ngIf="item.cdp==='p'">
+        ----------&gt; &diams;
+        <span *ngIf="1===1" (click)="sds(item.id,true)">U</span>&nbsp;&nbsp;
+        <span *ngIf="1===1" (click)="sds(item.id,false)">D</span>&nbsp;&nbsp;
+        <span><mat-icon (click)="click_change('p',item.id,item.description,true,item.description2)">edit</mat-icon></span>&nbsp;{{ item.description }} {{ item.description2 || ''}}
+        <span><mat-icon (click)="delete_plyrtm(item.id,item.description,item.description2)">delete</mat-icon></span>
+        <span *ngIf="(clickedChange===item.id) && (this.clickedChangeCdp==='p')">
+          <input type="text" placeholder="Change plyrtm" [(ngModel)]="changeCdp">&nbsp;&nbsp;
+          <input type="text" placeholder="Change plyrtm2" [(ngModel)]="changeCdp2">&nbsp;&nbsp;
+          <button (click)="change_plyrtm(item.id)">Change</button>
+          <button (click)="click_change('p',0,'',false)">Cancel</button>
+        </span>
+      </span>
+    </div>
+    <a [routerLink]="['/tbrks', tournId]" (click)="showRightNum = 1">tbrks</a>&nbsp;&nbsp;
+    <a [routerLink]="['/sch-builder', tournId]" (click)="showRightNum = 2">sch builder</a>&nbsp;&nbsp;
+    <a [routerLink]="['/cmm', tournId]" (click)="showRightNum = 3">cmm</a>&nbsp;&nbsp;
+    <a [routerLink]="['/lll-consolidated', tournId]" (click)="showRightNum = 4">lll consolidated</a>&nbsp;&nbsp;
+    <a href="#" (click)="showRightNum = 0; $event.preventDefault()">none</a>
+  </div>
+  <div class="cdp-right">
+    <app-tbrks *ngIf="showRightNum === 1"></app-tbrks>  
+    <app-sch-builder *ngIf="showRightNum === 2"></app-sch-builder> 
+    <app-cmm *ngIf="showRightNum === 3"></app-cmm> 
+    <app-lll-consolidated *ngIf="showRightNum === 4"></app-lll-consolidated>    
+</div>
+
+
+<!--<tr *ngFor="let row of rows; let i = index">
+    <td colspan='2'>&diams;</td>
+    <td><input type="text" [(ngModel)]="row.value" placeholder="Enter conf"></td>
+    <td><mat-icon (click)="delete_row(i)">delete</mat-icon></td>
+  </tr>
+<tr *ngIf="rows.length>0"><td colspan='2'></td><td><button (click)="add_confs()">Add</button></td><td></td></tr>
+-->

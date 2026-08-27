@@ -1,0 +1,51 @@
+<div class="margin-box"></div>
+<h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav>{{leagueName}} -- {{tournName}}</h3>
+
+<input type="number" [(ngModel)]="buildNum"><button (click)="build_sch()">Build Sch</button>&nbsp;&nbsp;<button (click)="get_sch()">Get Sch</button>
+<br/>
+
+<div *ngIf="confsArr.length === 0">No conferences loaded.</div>
+<br/>
+<select [(ngModel)]="rndSelect">
+    <option *ngFor="let item of [].constructor(maxRnd); let rnd = index" [value]="rnd + 1">{{rnd+1}}</option>
+</select>&nbsp;&nbsp;
+<select [(ngModel)]="rndType">
+    <option value="1">sch</option>
+    <option value="2">schres</option>
+    <option value="3">stnds</option>
+    <option value="4">ooo</option>
+    <option value="5">gms</option>
+</select>&nbsp;&nbsp;
+<a *ngIf="rndType==1" [routerLink]="['/sch', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd]">sch {{rndSelect}}</a>
+<a *ngIf="rndType==2" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'schres']">schres {{rndSelect}}</a>
+<a *ngIf="rndType==3" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'stnds']">stnds {{rndSelect}}</a>
+<a *ngIf="rndType==4" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'ooo']">stnds {{rndSelect}}</a>
+<a *ngIf="rndType==5" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'gms']">stnds {{rndSelect}}</a>
+<br/><br/>
+
+<input type="checkbox" (click)="change_check()" [(ngModel)]="isChecked"> {{strCheckBox}}
+
+<br/><br/>
+<table><tbody>
+    <ng-container *ngFor="let conf of confsArr; let i = index">
+        <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
+        <ng-container *ngFor="let divi of conf.diviArr; let i2 = index">
+            <tr>
+                <td><span class="divi-class"> - {{divi.divi}}</span></td>
+                <ng-container *ngIf="!isChecked">
+                    <td *ngFor="let item of [].constructor(maxRnd); let rnd = index"><span class="divi-class">{{rnd+1}}</span></td>
+                </ng-container>
+            </tr>
+            <ng-container *ngFor="let plyrtmsch of divi.plyrnmsSchArr; let i3 = index">
+                <tr><td><span class="plyrtm-class"> -- {{plyrtmsch.plyrtm}}</span></td>
+                    <ng-container *ngIf="!isChecked;else elseChecked">
+                        <td *ngFor="let nms of plyrtmsch.plyrnms; let i4 = index">{{nms}}</td>
+                    </ng-container>
+                    <ng-template #elseChecked>
+                        <td *ngFor="let nms of plyrtmsch.plyrnmesep; let i4 = index">{{nms}}</td>
+                    </ng-template>
+                </tr>
+            </ng-container>
+        </ng-container>
+    </ng-container>
+</tbody></table>

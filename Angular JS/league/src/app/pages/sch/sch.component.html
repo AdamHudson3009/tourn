@@ -1,0 +1,108 @@
+<div class="margin-box"></div>
+<h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav>{{leagueName}} -- {{tournName}}</h3>
+
+<div class="cdp-container">
+  <div class="cdp-left">
+    <b>Reg</b>&nbsp;&nbsp;<select [(ngModel)]="rndSelect">
+      <option *ngFor="let item of [].constructor(maxRnd); let rnd = index" [value]="rnd + 1">{{rnd+1}}</option>
+  </select>&nbsp;&nbsp;
+  <select [(ngModel)]="rndType">
+      <option value="1">sch</option>
+      <option value="2">schres</option>
+      <option value="3">stnds</option>
+      <option value="4">ooo</option>
+      <option value="5">gms</option>
+  </select>&nbsp;&nbsp;
+  <a *ngIf="rndType==1" (click)="reload(rndSelect)">sch {{rndSelect}}</a>
+  <a *ngIf="rndType==2" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'schres']">schres {{rndSelect}}</a>
+  <a *ngIf="rndType==3" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'stnds']">stnds {{rndSelect}}</a>
+  <a *ngIf="rndType==4" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'ooo']">stnds {{rndSelect}}</a>
+  <a *ngIf="rndType==5" [routerLink]="['/sch-res', leagueId, leagueName, tournId, tournName, rndSelect, maxRnd, 'gms']">stnds {{rndSelect}}</a>
+
+  <br/><br/>
+
+    <table><tbody>
+    <tr>
+      <th>ord</th>
+      <th>&nbsp;</th>
+      <th>&nbsp;</th>
+      <th>Player 1</th>
+      <th>Player 2</th>
+      <th>Winner</th>
+      <th>Pt</th>
+      <th>Pf</th>
+      <th>Pa</th>
+      <th>Rec</th>
+      <th>Notes</th>
+      <th>Msc</th>
+    </tr>
+
+    <tr *ngFor="let mtch of mtchs;let i = index">
+      <td>
+        <button (click)="ordnum(i+1, mtch.ordnum)">-</button>
+        <input type="number" [(ngModel)]="mtch.ordnum" min="1" max="99"></td>
+      <td>
+        <mat-icon *ngIf="(i>0) && !mtch.change && !mtchs[i-1].change" (click)="swap_row(mtch.gid,true)">keyboard_arrow_up</mat-icon>
+        <button *ngIf="mtch.change" (click)="edit_row(i, mtch.gid, mtch.plyrwn, mtch.plyrwnnm, mtch.pf, mtch.pa, mtch.notes)">Edit</button>
+        <span *ngIf="(i===0) && !mtch.change">&nbsp;</span>
+      </td>
+      <td>
+        <mat-icon *ngIf="(i < (mtchs.length-1)) && !mtch.change && !mtchs[i+1].change" (click)="swap_row(mtch.gid,false)">keyboard_arrow_down</mat-icon>
+        <button *ngIf="mtch.change" (click)="cancel_row(i)">Cancel</button>
+        <span *ngIf="(i===(mtchs.length-1)) && !mtch.change">&nbsp;</span>
+      </td>
+      <td>{{ mtch.plyr1nm }}</td>
+      <td>{{ mtch.plyr2nm }}</td>
+      <td><select (change)="mtch.change=true;" [(ngModel)]="mtch.plyrwn">
+        <option [value]="-1">----</option>
+        <option [value]="0">draw</option>
+        <option [value]="mtch.plyr1">{{mtch.plyr1nm}}</option>
+        <option [value]="mtch.plyr2">{{mtch.plyr2nm}}</option>
+      </select></td>
+      <td>{{ mtch.pf - mtch.pa }}</td>
+      <td><input type="number" (change)="mtch.change=true;" [(ngModel)]="mtch.pf" min="0" max="999" step="1" /></td>
+      <td><input type="number" (change)="mtch.change=true;" [(ngModel)]="mtch.pa" min="0" max="999" step="1" /></td>
+      <td>{{ mtch.rec1 }}{{ mtch.letter1 }}--{{ mtch.rec2 }}{{ mtch.letter2 }}</td>
+      <td><input (change)="mtch.change=true;" [(ngModel)]="mtch.notes"></td>
+      <ng-container *ngIf="mtch.msc1"><td *ngFor="let msc of mtch.msc1;let i2 = index">
+        <ng-container *ngIf="(mscEdit === i2);else elseDescr">
+          {{ mtch.plyr1nm }} {{msc}}
+          &nbsp;&nbsp;&nbsp;<mat-icon (click)="delete_msc(i, i2, mtch.plyr1, msc)">delete</mat-icon><br/>
+          <button (click)="cancel_msc()">Cancel</button>
+        </ng-container>
+        <ng-template #elseDescr>
+          <a (click)="edit_msc(i,i2)"><span class="trn-style">{{ mtch.plyr1nm }} {{msc}}</span></a>
+        </ng-template>  
+      </td></ng-container>
+      <ng-container *ngIf="mtch.msc2"><td *ngFor="let msc of mtch.msc2;let i2 = index">
+        <ng-container *ngIf="(mscRow === i) && (mscEdit === i2);else elseDescr">
+          {{ mtch.plyr2nm }} {{msc}}
+          &nbsp;&nbsp;&nbsp;<mat-icon (click)="delete_msc(i, i2, mtch.plyr2, msc)">delete</mat-icon><br/>
+          <button (click)="cancel_msc()">Cancel</button>
+        </ng-container>
+        <ng-template #elseDescr>
+          <a (click)="edit_msc(i,i2+(mtch.msc1?.length || 0))"><span class="trn-style">{{ mtch.plyr2nm }} {{msc}}</span></a>
+        </ng-template>  
+      </td></ng-container>
+    <td>
+      <button *ngIf="(mscRow !== i) || mscEdit !== ((mtch.msc1?.length || 0) + (mtch.msc2?.length || 0));else elseMiscA">
+        <a (click)="edit_msc(i, (mtch.msc1?.length || 0)+(mtch.msc2?.length || 0))">+</a>
+      </button>
+      <ng-template #elseMiscA>
+        <select (change)="mtch.change=true;" [(ngModel)]="mscAdd1">
+          <option [value]="mtch.plyr1">{{mtch.plyr1nm}}</option>
+          <option [value]="mtch.plyr2">{{mtch.plyr2nm}}</option>
+        </select>  
+        <input type="text" class="trn-text" placeholder="Enter" (ngModelChange)="changeFreeze=true;" [(ngModel)]="mscAdd2">&nbsp;&nbsp;
+        <button (click)="add_msc(i, mscAdd1, mscAdd2)">Add</button>
+        <button (click)="cancel_msc()">Cancel</button>
+      </ng-template>
+    </td>
+    <td>{{mtch.arch_nm}}</td><td>{{mtch.arch_pts}}</td>
+    </tr>
+  </tbody></table>
+  </div>
+  <div class="cdp-right">
+    <app-potw></app-potw> 
+  </div>
+</div>

@@ -1,0 +1,27 @@
+.margin-box {
+    margin: 20px;
+}
+.h3-style {
+    text-align: left;
+    background-color: aqua;
+}
+.table-style{
+    border: "1"
+}
+.cdp-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+  
+.cdp-left {
+   flex: 2;
+   padding-right: 20px;
+}
+  
+.cdp-right {
+   flex: 1;
+   border-left: 1px solid #ccc;
+   padding-left: 20px;
+   max-width: 400px; /* optional */
+}
