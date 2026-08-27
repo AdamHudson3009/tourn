@@ -3,12 +3,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { PotwComponent } from '../potw/potw.component';
 import { MatIconModule } from '@angular/material/icon';
-import { TbrksComponent } from '../tbrks/tbrks.component';
-import { SchBuilderComponent} from "../sch-builder/sch-builder.component"
-import { CmmComponent } from '../cmm/cmm.component';
-import { LllConsolidatedComponent } from "../lll-consolidated/lll-consolidated.component"
-import { GrammarComponent } from '../grammar/grammar.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -37,6 +33,7 @@ interface Mtch {
   letter2: string;
   arch_nm: string;
   arch_pts: string;
+  ordnum: number;
 }
 
 interface PlfSelect {
@@ -48,8 +45,8 @@ interface PlfSelect {
   selector: 'app-sch',
   imports: [
     CommonModule, HttpClientModule, FormsModule, ReactiveFormsModule, RouterModule,
-    MatIconModule, TbrksComponent, SchBuilderComponent, CmmComponent, LllConsolidatedComponent,
-    GrammarComponent, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule
+    MatIconModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule,
+    PotwComponent 
   ],
   templateUrl: './sch.component.html',
   styleUrl: './sch.component.css'
@@ -114,6 +111,13 @@ export class SchComponent {
     plyrtm_id: 0,
     letters: "",
     add_delete: 0
+  }
+
+  payload_ord = {
+    tourn_id: 0,
+    rnd: 0, 
+    old_num: 0,
+    new_num: 0,
   }
 
   ngOnInit(){
@@ -254,6 +258,25 @@ export class SchComponent {
   reload(rndSelect: number) {
     this.rnd = rndSelect;
     this.get_sch();
+  }
+
+  ordnum(old: number, newn: number) {
+    this.payload_ord.tourn_id = this.tournId;
+    this.payload_ord.rnd = Number(this.rnd);
+    this.payload_ord.old_num = old
+    this.payload_ord.new_num = newn
+
+    this.http.post<any>(this.APIURL + "trns/OrdNum", this.payload_ord).subscribe({
+      next: (res) => {
+        this.mtchs = [];
+        this.Oldmtchs = [];
+        this.get_sch();
+      },
+      error: (err) => {
+        alert("HTTP ERROR: " + JSON.stringify(err));
+        console.error('HTTP POST failed:', err);
+      }
+    });
   }
 }
 

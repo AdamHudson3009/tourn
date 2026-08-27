@@ -33,6 +33,19 @@ type SchSwap struct {
 	Up    bool `json:"up"`
 }
 
+type OrdNum struct {
+	TrnId  int  `json:"tourn_id"`
+	Rnd    int  `json:"rnd"`
+	OldNum int  `json:"old_num"`
+	NewNum int  `json:"new_num"`
+}
+
+type Potw struct {
+	Rnd    int     `json:"rnd"`
+	Letters string `json:"letters"`
+	Plyr   string  `json:"plyr"`
+}
+
 type SchEdit struct {
 	Gid    int    `json:"gid"`
 	Plyrwn int    `json:"plyrwn"`

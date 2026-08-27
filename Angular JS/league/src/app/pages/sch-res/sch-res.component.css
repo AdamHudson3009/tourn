@@ -14,3 +14,21 @@
 .plyrtm-class {
   font-size: 1em; 
 }
+
+.cdp-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+  
+.cdp-left {
+   flex: 1;
+   padding-right: 20px;
+}
+  
+.cdp-right {
+   flex: 1;
+   border-left: 1px solid #ccc;
+   padding-left: 20px;
+   
+}

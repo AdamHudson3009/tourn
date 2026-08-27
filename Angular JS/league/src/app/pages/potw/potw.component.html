@@ -1,0 +1,16 @@
+<h2>POTW</h2>
+
+<table><tbody><th>rnd</th><th>letters</th><th>plyr</th>
+    <ng-container *ngFor="let num of [].constructor(maxRnds); let i = index">
+        <tr>
+            <td>{{potwInfo[i].rnd}}</td>
+            <td>potw</td>
+            <td>{{potwInfo[i].plyr}}</td>
+        </tr>
+        <tr>
+            <td>{{potwInfo[i].rnd}}</td>
+            <td>rnk</td>
+            <td>{{potwInfo[i].rnk}}</td>
+        </tr>
+    </ng-container>
+</tbody></table>

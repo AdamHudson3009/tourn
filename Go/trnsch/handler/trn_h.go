@@ -98,6 +98,52 @@ func SwapOrdr(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func OrdNum(w http.ResponseWriter, req *http.Request) {
+	var payload model.OrdNum
+	defer req.Body.Close()
+
+	err := json.NewDecoder(req.Body).Decode(&payload)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	var jsonOut []byte
+	if jsonOut, err = trn.OrdNum(payload.TrnId, payload.Rnd, payload.OldNum, payload.NewNum); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*") // for CORS if needed
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonOut)
+	return
+}
+
+func Potw(w http.ResponseWriter, req *http.Request) {
+	var payload model.Trn
+	defer req.Body.Close()
+
+	err := json.NewDecoder(req.Body).Decode(&payload)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	var jsonOut []byte
+	if jsonOut, err = trn.Potw(payload.Id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*") // for CORS if needed
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonOut)
+	return
+}
+
 func EditSch(w http.ResponseWriter, req *http.Request) {
 	var payload model.SchEdit
 	defer req.Body.Close()

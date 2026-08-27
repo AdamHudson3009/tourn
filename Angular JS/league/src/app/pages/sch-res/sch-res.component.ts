@@ -4,11 +4,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from '@angular/material/icon';
-import { TbrksComponent } from '../tbrks/tbrks.component';
-import { SchBuilderComponent} from "../sch-builder/sch-builder.component"
-import { CmmComponent } from '../cmm/cmm.component';
-import { LllConsolidatedComponent } from "../lll-consolidated/lll-consolidated.component"
-import { GrammarComponent } from '../grammar/grammar.component';
+import { PotwComponent } from '../potw/potw.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -90,8 +86,8 @@ export interface SchRes {
   selector: 'app-sch-res',
   imports: [
     CommonModule, HttpClientModule, FormsModule, ReactiveFormsModule, RouterModule,
-    MatIconModule, TbrksComponent, SchBuilderComponent, CmmComponent, LllConsolidatedComponent,
-    GrammarComponent, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule
+    MatIconModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule,
+    PotwComponent 
   ],
   templateUrl: './sch-res.component.html',
   styleUrl: './sch-res.component.css'
@@ -108,6 +104,7 @@ title = 'Sch';
   rndSelect: number = 0;
   rndType: number = 0;
   resStndOoo: string = "";
+  potw: boolean = false;
  
   data: SchRes = {
     confs: [],

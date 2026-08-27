@@ -329,3 +329,82 @@ func AddDeleteMsc(trnId int, rnd int, plyrtm int, letters string, addDelete int)
 	jsonOut, _ := json.MarshalIndent(resp, "", "  ")
 	return jsonOut, nil
 }
+
+
+func OrdNum(trnId int, rnd int, oldnum int, newnum int) ([]byte, error) {
+	if (newnum > oldnum) {
+		sql := "update gms set ordr = 0 where tourn_id = ? and rnd = ? and ordr = ?"
+		params := []interface{}{trnId, rnd, oldnum}
+		_, err := db.ChangDB(sql, params)
+		if err != nil {
+			return nil, err
+		}
+		sql = "update gms set ordr = ordr -1 where tourn_id = ? and rnd = ? and ordr > ? and ordr <= ?"
+		params = []interface{}{trnId, rnd, oldnum, newnum}
+		_, err = db.ChangDB(sql, params)
+		if err != nil {
+			return nil, err
+		}
+		sql = "update gms set ordr = ? where tourn_id = ? and rnd = ? and ordr = 0"
+		params = []interface{}{newnum, trnId, rnd}
+		_, err = db.ChangDB(sql, params)
+		if err != nil {
+			return nil, err
+		}
+	} else if (newnum < oldnum) {
+		sql := "update gms set ordr = 0 where tourn_id = ? and rnd = ? and ordr = ?"
+		params := []interface{}{trnId, rnd, oldnum}
+		_, err := db.ChangDB(sql, params)
+		if err != nil {
+			return nil, err
+		}
+		sql = "update gms set ordr = ordr +1 where tourn_id = ? and rnd = ? and ordr < ? and ordr >= ?"
+		params = []interface{}{trnId, rnd, oldnum, newnum}
+		_, err = db.ChangDB(sql, params)
+		if err != nil {
+			return nil, err
+		}
+		sql = "update gms set ordr = ? where tourn_id = ? and rnd = ? and ordr = 0"
+		params = []interface{}{newnum, trnId, rnd}
+		_, err = db.ChangDB(sql, params)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	resp := model.Response{Msg: "ok"}
+	jsonOut, _ := json.MarshalIndent(resp, "", "  ")
+	return jsonOut, nil
+}
+
+func Potw(trnId int) ([]byte, error) {
+	potwList := []model.Potw{}
+
+	sql := `select m.rnd, m.letters, p.description
+		from msc m inner join plyrtm p on p.id = m.plyrtm_id 
+		where m.letters in ('potw','rnk') and m.tourn_id = ?
+		order by m.rnd, m.letters, p.description`
+	rows, err := db.DB.Query(sql, trnId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+
+	var rnd int
+	var letters string
+	var plyrtm string
+	for rows.Next() {
+		if err = rows.Scan(&rnd, &letters, &plyrtm); err != nil {
+			return nil, err
+		}
+
+		potwList = append(potwList, model.Potw{Rnd: rnd, Letters: letters, Plyr: plyrtm})
+	}
+
+	jsonOut, err := json.MarshalIndent(potwList, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return jsonOut, nil
+}

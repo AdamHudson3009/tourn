@@ -15,6 +15,7 @@ const routes: Routes = [
   { path: 'trnsch/:league_id/:league_name/:tourn_id/:tourn_name', loadComponent: () => import('./pages/trnsch/trnsch.component').then(m => m.TrnschComponent) },
   { path: 'sch/:league_id/:league_name/:tourn_id/:tourn_name/:rnd/:maxRnd', loadComponent: () => import('./pages/sch/sch.component').then(m => m.SchComponent) },
   { path: 'sch-res/:league_id/:league_name/:tourn_id/:tourn_name/:rnd/:maxRnd/:resStndOoo', loadComponent: () => import('./pages/sch-res/sch-res.component').then(m => m.SchResComponent) },
+  { path: 'potw/:tourn_id/', loadComponent: () => import('./pages/potw/potw.component').then(m => m.PotwComponent) },
 ];
 
 export const appConfig: ApplicationConfig = {

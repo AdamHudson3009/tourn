@@ -20,7 +20,7 @@
     border-radius: 4px;
   }
 
-  .cdp-container {
+.cdp-container {
     display: flex;
     flex-direction: row;
     align-items: flex-start;

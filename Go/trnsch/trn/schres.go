@@ -370,7 +370,6 @@ func BuildSchres(trnId int, rnd int) ([]byte, error) {
 		is_strk = true
 	}
 
-	fmt.Println("HEreAAAsdsddsdAAAA")
 
 	sql = "select rnd, coalesce(letters,''), plyrtm_id " +
 		"from msc where tourn_id = ? and rnd <= ? " +

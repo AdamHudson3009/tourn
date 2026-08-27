@@ -32,6 +32,8 @@ func main() {
 	http.Handle("/trns/EditSch", withCORS(http.HandlerFunc(handler.EditSch)))
 	http.Handle("/trns/SchResByRnd", withCORS(http.HandlerFunc(handler.SchResByRnd)))
 	http.Handle("/trns/AddDeleteMsc", withCORS(http.HandlerFunc(handler.AddDeleteMsc)))
+	http.Handle("/trns/OrdNum", withCORS(http.HandlerFunc(handler.OrdNum)))
+	http.Handle("/trns/Potw", withCORS(http.HandlerFunc(handler.Potw)))
 	http.Handle("/trns/Import", withCORS(http.HandlerFunc(handler.Import)))
 	http.Handle("/trns/Build/", withCORS(http.HandlerFunc(handler.BuildTrnById)))
 	http.Handle("/trns/Get/", withCORS(http.HandlerFunc(handler.GetTrnById)))
@@ -40,13 +42,9 @@ func main() {
 	http.Handle("/trns/EditSch/", withCORS(http.HandlerFunc(handler.EditSch)))
 	http.Handle("/trns/SchResByRnd/", withCORS(http.HandlerFunc(handler.SchResByRnd)))
 	http.Handle("/trns/AddDeleteMsc/", withCORS(http.HandlerFunc(handler.AddDeleteMsc)))
+	http.Handle("/trns/OrdNum/", withCORS(http.HandlerFunc(handler.OrdNum)))
+	http.Handle("/trns/Potw/", withCORS(http.HandlerFunc(handler.Potw)))
 	http.Handle("/trns/Import/", withCORS(http.HandlerFunc(handler.Import)))
-
-	/*tree := model.TrnTree{
-		Confs:   make(map[int]model.Conf),
-		Plyrtms: make(map[int]model.PlyrtmInfo),
-	}
-	fmt.Println(tree)*/
 
 	db.Init() // Initialize DB connection
 
