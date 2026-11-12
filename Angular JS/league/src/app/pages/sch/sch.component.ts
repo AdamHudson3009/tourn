@@ -9,6 +9,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatInputModule } from '@angular/material/input';
+import { finalize } from 'rxjs';
+//import { setCookie, getCookie, clearCookie } from '../../../common/cookies';
 
 interface Mtch {
 	gid: number;
@@ -28,17 +30,38 @@ interface Mtch {
   tie2: number;
   change: boolean;
   msc1: string[];
+  mscAddAll1: string;
   msc2: string[];
+  mscAddAll2: string;
+  mscAddMode: boolean;
   letter1: string;
   letter2: string;
   arch_nm: string;
   arch_pts: string;
   ordnum: number;
+  has_stnd: string;
 }
 
+/*
 interface PlfSelect {
   indx: number;
   name: string;
+}*/
+
+
+interface EditPayload {
+  gid: number;
+  plyrwn: number;
+  pf: number;
+  pa: number;
+  notes: string;
+  ordnum: number;
+  plyr1: number,
+  plyr2: number,
+  oldMscAddAll1: string;
+  oldMscAddAll2: string;
+  mscAddAll1: string;
+  mscAddAll2: string;
 }
 
 @Component({
@@ -65,12 +88,11 @@ export class SchComponent {
   mtchs: Mtch[] = [];
   Oldmtchs: Mtch[] = [];
   displayedColumns: string[] = ['plyr1nm', 'plyr2nm', 'plyrwnnm', 'actions'];
-  mscRow: number = -1;
-  mscEdit: number = -1;
-  mscAdd1: number = -1;
+  mscAdd1: number = 1;
   mscAdd2: string = "";
   changeFreeze: boolean = false;
-  
+  loading: boolean = false;
+
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
@@ -82,6 +104,8 @@ export class SchComponent {
       this.tournName = params['tourn_name'];
       this.rnd = Number(params['rnd']);
       this.maxRnd = Number(params['maxRnd']);
+      this.rndSelect = this.rnd;
+      this.rndType = 1;
     });
   }
 
@@ -90,67 +114,102 @@ export class SchComponent {
     rnd: 0
   }
 
-  payload_swp = {
-    tourn_id: 0,
-    rnd: 0, 
-    gid: 0, 
-    up: false  
-  }
+  payload_edits: EditPayload[] = [];
 
-  payload_edit = {
-    gid: 0, 
-    plyrwn: 0,
-    pf: 0,
-    pa: 0,
-    notes: ""  
-  }
-
+  /*
   payload_msc = {
     tourn_id: 0,
     rnd: 0, 
     plyrtm_id: 0,
     letters: "",
     add_delete: 0
-  }
-
-  payload_ord = {
-    tourn_id: 0,
-    rnd: 0, 
-    old_num: 0,
-    new_num: 0,
-  }
+  }*/
 
   ngOnInit(){
+    this.loading = false;   // <-- add this with your other fields
     this.get_sch();
   }
 
-  get_sch() {
+  async get_sch() {
+    this.loading = true;
     this.payload.id = this.tournId;
     this.payload.rnd = Number(this.rnd);
   
-    this.http.post<Mtch[]>(this.APIURL + "trns/GetSch", this.payload).subscribe({
+    await this.http.post<Mtch[]>(this.APIURL + "trns/GetSch", this.payload)
+    .pipe(finalize(() => this.loading = false))
+    .subscribe({
       next: (res) => {
         this.mtchs = res;
         this.Oldmtchs = res.map(m => JSON.parse(JSON.stringify(m)));
+        this.msc_joining(this.mtchs);
+        this.msc_joining(this.Oldmtchs);
+        this.loading = false;
       },
       error: (err) => {
         alert("HTTP ERROR: " + JSON.stringify(err));
         console.error('HTTP POST failed:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  msc_joining(mtchs: Mtch[]) {
+    mtchs.forEach(mtch => {
+      mtch.change = false //on reload, so no changes yet
+      mtch.mscAddMode = false
+      mtch.mscAddAll1 = ""
+      mtch.mscAddAll2 = ""
+      if (mtch.has_stnd === "N") { //if has_stnd is "N", playoffs, so only one comparison is needed
+        mtch.letter1 = "";
+        mtch.letter2 = "";
+      } else {
+        if (mtch.msc1) {
+          mtch.mscAddAll1 = mtch.msc1.join(',');
+        }
+        if (mtch.msc2) {
+          mtch.mscAddAll2 = mtch.msc2.join(',');
+        }
       }
     });
   }
   
-  swap_row(gid:number, up:boolean) {
-    this.payload_swp.tourn_id = this.tournId;
-    this.payload_swp.rnd = Number(this.rnd);
-    this.payload_swp.gid = gid
-    this.payload_swp.up = up
+  swap_row(indx:number, up:boolean) {
+    let other_indx = up ? indx - 1 : indx + 1;
+    const temp_mtch = this.mtchs[indx]
+    this.mtchs[indx] = this.mtchs[other_indx];
+    this.mtchs[other_indx] = temp_mtch;
+  }
 
-    this.http.post<any>(this.APIURL + "trns/SwapOrdr", this.payload_swp).subscribe({
+ 
+  async edit_row(indx: number, gid:number, plyrwn:number, plyrwnnm: string, pf: number, pa: number, notes: string) {
+    this.payload_edits = [];
+    this.payload_edits.push({
+      gid: Number(gid), 
+      plyrwn: Number(plyrwn), 
+      pf: Number(pf), 
+      pa: Number(pa), 
+      notes: notes ?? "", 
+      ordnum: 0,
+      plyr1: Number(this.mtchs[indx].plyr1),
+      plyr2: Number(this.mtchs[indx].plyr2),
+      oldMscAddAll1: this.Oldmtchs[indx].mscAddAll1,
+      oldMscAddAll2: this.Oldmtchs[indx].mscAddAll2,
+      mscAddAll1: this.mtchs[indx].mscAddAll1,
+      mscAddAll2: this.mtchs[indx].mscAddAll2
+    }) 
+
+    await this.http.post<any>(this.APIURL + "trns/EditSchs", this.payload_edits).subscribe({
       next: (res) => {
-        this.mtchs = [];
-        this.Oldmtchs = [];
-        this.get_sch();
+        this.Oldmtchs[indx].plyrwn = plyrwn;
+        this.Oldmtchs[indx].plyrwnnm = plyrwnnm;
+        this.Oldmtchs[indx].pf = pf ?? 0;
+        this.Oldmtchs[indx].pa = pa ?? 0;
+        this.Oldmtchs[indx].notes = notes;
+        this.Oldmtchs[indx].msc1 = this.mtchs[indx].mscAddAll1.split(","); 
+        this.Oldmtchs[indx].msc2 = this.mtchs[indx].mscAddAll2.split(","); 
+        this.Oldmtchs[indx].mscAddAll1 = this.mtchs[indx].mscAddAll1;
+        this.Oldmtchs[indx].mscAddAll2 = this.mtchs[indx].mscAddAll2; 
+        this.mtchs[indx].change = false;
       },
       error: (err) => {
         alert("HTTP ERROR: " + JSON.stringify(err));
@@ -159,91 +218,15 @@ export class SchComponent {
     });
   }
 
-  edit_row(i: number, gid:number, plyrwn:number, plyrwnnm: string, pf: number, pa: number, notes: string) {
-    this.payload_edit.gid = gid;
-    this.payload_edit.plyrwn = Number(plyrwn);
-    this.payload_edit.pf = pf;
-    this.payload_edit.pa = pa;
-    this.payload_edit.notes = notes
-
-    this.http.post<any>(this.APIURL + "trns/EditSch", this.payload_edit).subscribe({
-      next: (res) => {
-        alert(res.msg);
-        if (res.msg === "ok") {
-          this.Oldmtchs[i].plyrwn = plyrwn;
-          this.Oldmtchs[i].plyrwnnm = plyrwnnm;
-          this.Oldmtchs[i].pf = pf;
-          this.Oldmtchs[i].pa = pa;
-          this.Oldmtchs[i].notes = notes; 
-          this.mtchs[i].change = false;
-        }
-      },
-      error: (err) => {
-        alert("HTTP ERROR: " + JSON.stringify(err));
-        console.error('HTTP POST failed:', err);
-      }
-    });
-  }
-
-  add_msc(indx: number, plyrtm: number, letters: string) {
-    this.payload_msc.tourn_id =Number(this.tournId);
-    this.payload_msc.rnd = Number(this.rnd);
-    this.payload_msc.plyrtm_id = Number(plyrtm); 
-    this.payload_msc.letters = letters;
-    this.payload_msc.add_delete = 1;
-
-    this.http.post<any>(this.APIURL + "trns/AddDeleteMsc", this.payload_msc).subscribe({
-      next: (res) => {
-        alert(res.msg);
-        this.changeFreeze = false;
-        if (plyrtm == this.mtchs[indx].plyr1) {
-          this.mtchs[indx].msc1.push(letters);
-        } else {
-          this.mtchs[indx].msc2.push(letters);
-        }
-      },
-      error: (err) => {
-        alert("HTTP ERROR: " + JSON.stringify(err));
-        console.error('HTTP POST failed:', err);
-      }
-    });
-  }
-
-  edit_msc(indx1:number,indx2:number) {
-    if (!this.changeFreeze) {
-      this.mscRow = indx1;
-      this.mscEdit = indx2;
-      this.changeFreeze = true;
+  add_msc2(indx: number, oneOrTwo: number, letters: string) {
+    if (Number(oneOrTwo) === 1) {
+      this.mtchs[indx].mscAddAll1 = letters;
+      this.mtchs[indx].msc1 = []
+    } else {
+      this.mtchs[indx].mscAddAll2 = letters;
+      this.mtchs[indx].msc2 = []; //placeholder for existing, use mscAddAll to analyze 
     }
-  }
-
-  delete_msc(indx1: number, indx2: number, plyrtm:number, letters:string) {
-    this.payload_msc.tourn_id = Number(this.tournId);
-    this.payload_msc.rnd = Number(this.rnd);
-    this.payload_msc.plyrtm_id = Number(plyrtm); 
-    this.payload_msc.letters = letters;
-    this.payload_msc.add_delete = 0;
-    this.http.post<any>(this.APIURL + "trns/AddDeleteMsc", this.payload_msc).subscribe({
-      next: (res) => {
-        alert(res.msg);
-        this.changeFreeze = false;
-        if (indx2 < this.mtchs[indx1].msc1.length) {
-          this.mtchs[indx1].msc1.splice(indx2, 1);
-        } else {
-          this.mtchs[indx1].msc2.splice(indx2-this.mtchs[indx1].msc1.length, 1);
-        }
-      },
-      error: (err) => {
-        alert("HTTP ERROR: " + JSON.stringify(err));
-        console.error('HTTP POST failed:', err);
-      }
-    });
-  }
-
-  cancel_msc() {
-    this.mscRow = -1;
-    this.mscEdit = -1;
-    this.changeFreeze = false;
+    this.mtchs[indx].mscAddMode = false;
   }
 
   cancel_row(i: number) {
@@ -260,23 +243,43 @@ export class SchComponent {
     this.get_sch();
   }
 
-  ordnum(old: number, newn: number) {
-    this.payload_ord.tourn_id = this.tournId;
-    this.payload_ord.rnd = Number(this.rnd);
-    this.payload_ord.old_num = old
-    this.payload_ord.new_num = newn
 
-    this.http.post<any>(this.APIURL + "trns/OrdNum", this.payload_ord).subscribe({
+  async save_changes() {
+    if (!confirm("Do you want to save changes?")) return;
+
+    this.payload_edits = this.mtchs.map((match, idx) => ({
+      gid: Number(match.gid),
+      plyrwn: Number(match.plyrwn),
+      pf: Number(match.pf),
+      pa: Number(match.pa),
+      ordnum: idx + 1,
+      notes: match.notes ?? "",
+      plyr1: Number(this.mtchs[idx].plyr1),
+      plyr2: Number(this.mtchs[idx].plyr2),
+      oldMscAddAll1: this.Oldmtchs[idx].mscAddAll1,
+      oldMscAddAll2: this.Oldmtchs[idx].mscAddAll2,
+      mscAddAll1: this.mtchs[idx].mscAddAll1,
+      mscAddAll2: this.mtchs[idx].mscAddAll2
+    }));
+
+    await this.http.post<any>(this.APIURL + "trns/EditSchs", this.payload_edits).subscribe({
       next: (res) => {
-        this.mtchs = [];
-        this.Oldmtchs = [];
-        this.get_sch();
+        this.mtchs.forEach(mtch => mtch.change = false);
+        this.reload(this.rnd);
       },
       error: (err) => {
         alert("HTTP ERROR: " + JSON.stringify(err));
         console.error('HTTP POST failed:', err);
       }
     });
+
   }
+
+  cancel_changes() {
+    if (confirm("Are you sure you want to cancel changes?")) {
+      this.mtchs = JSON.parse(JSON.stringify(this.Oldmtchs));
+    }
+  }
+
 }
 

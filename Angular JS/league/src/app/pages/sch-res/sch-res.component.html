@@ -1,11 +1,14 @@
 <div class="margin-box"></div>
 <h3 class="h3-style"><nav><a [routerLink]="['/league']">League Page</a> --- <a [routerLink]="['/tourn', leagueId, leagueName]">{{ leagueName }}</a> --- {{ tournName }}</nav>{{leagueName}} -- {{tournName}}</h3>
 
-<div class="cdp-container">
+<div class="cdp-container" [ngClass]="{
+       'single-view': resStndOoo == 'ooo' || resStndOoo == 'gms',
+       'dual-view': resStndOoo != 'ooo' && resStndOoo != 'gms'
+     }">
   <div class="cdp-left">
 
-    <select [(ngModel)]="rndSelect">
-      <option *ngFor="let item of [].constructor(maxRnd); let rnd = index" [value]="rnd + 1">{{rnd+1}}</option>
+  <select [(ngModel)]="rndSelect">
+    <option *ngFor="let item of [].constructor(maxRnd); let rnd = index" [value]="rnd + 1">{{rnd+1}}</option>
   </select>&nbsp;&nbsp;
   <select [(ngModel)]="rndType">
       <option value="1">sch</option>
@@ -17,14 +20,15 @@
   <a *ngIf="rndType==2" (click)="reload(rndSelect, 'schres')">schres {{rndSelect}}</a>
   <a *ngIf="rndType==4" (click)="reload(rndSelect, 'ooo')">ooo {{rndSelect}}</a>
   <a *ngIf="rndType==5" (click)="reload(rndSelect, 'gms')">gms {{rndSelect}}</a>
-  &nbsp;&nbsp;<a *ngIf="rndType==2" (click)="potw=!potw">potw</a>
+  &nbsp;&nbsp;<a *ngIf="rndType==2 && potw" (click)="potw=!potw">stnds</a>
+  <a *ngIf="rndType==2 && !potw" (click)="potw=!potw">potw</a>
   <br/><br/>
 
   <h3>{{resStndOoo}}</h3>
 
 <!--sch res-->
 <ng-container *ngIf="resStndOoo=='schres'">
-  <table><tbody>
+  <div class="table-container"><table><tbody>
     <ng-container *ngFor="let conf of data.confs">
       <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
       <ng-container *ngFor="let divi of conf.divis">
@@ -39,7 +43,7 @@
         </tr>
       </ng-container>
     </ng-container>
-  </tbody></table>
+  </tbody></table></div>
 </ng-container>
 
 
@@ -107,7 +111,7 @@
 
 </div>
 
-<div class="cdp-right">
+<div class="cdp-right" *ngIf="resStndOoo != 'ooo' && resStndOoo != 'gms'">
   <br/><br/><br/><br/><br/><br/><br/>
   <ng-container *ngIf="rndType==2">
     <ng-container *ngIf="potw;else elseStnd">
@@ -116,11 +120,11 @@
     <ng-template #elseStnd>
       <table><tbody>
     <ng-container *ngFor="let conf of data.conf_stnd">
-      <tr><td><span class="conf-class">{{conf.conf}}</span></td></tr>
+      <tr><td colspan="2"><span class="conf-class">{{conf.conf}}</span></td></tr>
       <ng-container *ngIf="conf.cn && (conf.cn.length > 0)">
         <tr><td><span class="divi-class">CN</span></td></tr>
         <tr *ngFor="let a1 of conf.cn">
-          <td>{{a1.rnk}}</td>
+          <td>{{a1.rnk}}&nbsp;</td>
           <td>{{a1.name}}</td>
           <td>{{a1.rec}}</td>
           <td><ng-container *ngFor="let col of a1.g_fields">
@@ -141,9 +145,9 @@
         </tr>
       </ng-container>
       <ng-container *ngIf="conf.dv && (conf.dv.length > 0)">
-        <tr><td><span class="divi-class">DV</span></td></tr>
+        <tr><td colspan="2"><span class="divi-class">DV</span></td></tr>
         <tr *ngFor="let a1 of conf.dv">
-          <td>{{a1.rnk}}</td>
+          <td>{{a1.rnk}}&nbsp;</td>
           <td>{{a1.name}}</td>
           <td>{{a1.rec}}</td>
           <td><ng-container *ngFor="let col of a1.g_fields">
@@ -164,9 +168,10 @@
         </tr>
       </ng-container>
       <ng-container *ngIf="conf.wc && (conf.wc.length > 0)">
-        <tr><td><span class="divi-class">WC</span></td></tr>
+        <tr><td colspan="2"><span class="divi-class">WC</span></td></tr>
         <tr *ngFor="let a1 of conf.wc">
-          <td>{{a1.rnk}}</td>
+          <td *ngIf="a1.rnkAlt>0">{{a1.rnkAlt}}&nbsp;</td>
+          <td *ngIf="a1.rnkAlt==0">*&nbsp;</td>
           <td>{{a1.name}}</td>
           <td>{{a1.rec}}</td>
           <td><ng-container *ngFor="let col of a1.g_fields">
@@ -192,5 +197,8 @@
   </tbody></table>
     </ng-template>
   </ng-container>
-
 </div></div>
+
+<div *ngIf="!hasRemain">
+  <button (click)="wc_build()">Build WC</button><br/><br/>
+</div>

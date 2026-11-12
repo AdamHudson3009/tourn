@@ -15,6 +15,12 @@
   font-size: 1em; 
 }
 
+.table-container {
+  width: 100%;          /* or a fixed width like 600px */
+  overflow-x: auto;     /* horizontal scrollbar only when needed */
+  white-space: nowrap;
+}
+
 .cdp-container {
     display: flex;
     flex-direction: row;
@@ -22,13 +28,16 @@
 }
   
 .cdp-left {
-   flex: 1;
-   padding-right: 20px;
+  flex: 1.7;
+  padding-right: 1px;
+  overflow: auto;
+  font-size: 0.90em;
 }
   
 .cdp-right {
    flex: 1;
    border-left: 1px solid #ccc;
-   padding-left: 20px;
-   
+   padding-left: 2px;
+   overflow: auto;
+   font-size: 0.90em;
 }

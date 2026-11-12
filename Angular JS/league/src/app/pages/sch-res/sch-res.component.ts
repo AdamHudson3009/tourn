@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatInputModule } from '@angular/material/input';
+import { error } from 'console';
 
 export interface SchResPlyrtm {
   rnk: number;
@@ -46,6 +47,8 @@ export interface ConfOOO {
 
 export interface RnkStnd {
   rnk: number;
+  rnkAlt: number;
+  plyrId: number;
   name: string;
   rec: string;
   g_fields: string[];
@@ -55,6 +58,7 @@ export interface RnkStnd {
 
 export interface ConfStnd {
   conf: string;
+  confId: number;
   cn: RnkStnd[];
   wc: RnkStnd[];
   dv: RnkStnd[];
@@ -93,8 +97,9 @@ export interface SchRes {
   styleUrl: './sch-res.component.css'
 })
 export class SchResComponent {
-title = 'Sch';
+  title = 'Sch';
   APIURL = "http://localhost:8080/";
+  CSharpURL = "http://localhost:5151/";
   leagueId: number = 0;
   leagueName: string = '';
   tournId: number = 0;
@@ -105,7 +110,8 @@ title = 'Sch';
   rndType: number = 0;
   resStndOoo: string = "";
   potw: boolean = false;
- 
+  hasRemain: boolean = false;
+
   data: SchRes = {
     confs: [],
     conf_ooo: [],
@@ -126,6 +132,14 @@ title = 'Sch';
       this.rnd = Number(params['rnd']);
       this.maxRnd = Number(params['maxRnd']);
       this.resStndOoo = params['resStndOoo'];
+      this.rndSelect = this.rnd;
+      if (this.resStndOoo === 'schres') {
+        this.rndType = 2;
+      } else if (this.resStndOoo === 'ooo') {
+        this.rndType = 4;
+      } else if (this.resStndOoo === 'gms') {
+        this.rndType = 5;
+      }
     });
   }
 
@@ -133,6 +147,12 @@ title = 'Sch';
     id: 0,
     rnd: 0
   }
+
+  payload_wc = {
+    trnId: 0,
+    confId: [] as number[],
+    plyrsConIds: [] as number[][],
+  };
 
   ngOnInit(){
     this.get_schres();
@@ -145,8 +165,21 @@ title = 'Sch';
 
     this.http.post<SchRes>(this.APIURL + "trns/SchResByRnd", this.payload).subscribe(res => {
       this.data = res;
+      this.hasRemain = this.has_remain()
+    }, error => {
+      alert("Error fetching schedule results: " + JSON.stringify(error));  
     });
+  }
 
+  has_remain() {
+    for (const one_conf_gms of this.data.conf_gms) {
+      for (const one_plyrtm_gms of one_conf_gms.plyrtm_gms) {
+        if (one_plyrtm_gms.remain.length > 0) {
+          return true;   // here, return exits has_remain itself
+        }
+      }
+    }
+    return false;
   }
 
   reload(rndSelect: number, resStndOoo: string) {
@@ -155,6 +188,27 @@ title = 'Sch';
       this.rnd = rndSelect;
       this.get_schres();
     }
-    
+  }
+
+  wc_build() {
+    this.payload_wc.trnId = this.tournId;
+    this.payload_wc.confId = [];
+    this.payload_wc.plyrsConIds = [];
+
+    for (const one_conf_stnd of this.data.conf_stnd) {
+      this.payload_wc.confId.push(one_conf_stnd.confId);
+      const group: number[] = [];
+      for (const one_plyrtm_stnd of one_conf_stnd.wc) {
+        if (one_plyrtm_stnd.rnkAlt > 0) {
+          group.push(one_plyrtm_stnd.plyrId);
+        }
+      }
+      this.payload_wc.plyrsConIds.push(group);
+    }
+
+    this.http.post(this.CSharpURL + "trn/wc", this.payload_wc).subscribe(res => {
+        alert("WC Build Response: " + JSON.stringify(res));
+    });
+    alert("WC Build: " + JSON.stringify(this.payload_wc));
   }
 }
