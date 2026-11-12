@@ -82,12 +82,7 @@ func Import(trnId int, filename string) ([]byte, error) {
 		}
 
 	}
-	/*fmt.Println(DivHsh)
-	fmt.Println()
-	fmt.Println(AbbrHsh)
-	fmt.Println()
-	fmt.Println(SdsHsh)
-	*/
+	
 	wk := 0
 	tm1 := ""
 	tm2 := ""

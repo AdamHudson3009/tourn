@@ -64,6 +64,15 @@ func SetupRoutes() *http.ServeMux {
 		}
 	})
 
+	mux.HandleFunc("/trns/EditSchs", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handler.EditSchs(w, r)
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
 	mux.HandleFunc("/trns/AddDeleteMsc", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:

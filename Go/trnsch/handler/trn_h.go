@@ -168,6 +168,83 @@ func EditSch(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func EditSchs(w http.ResponseWriter, req *http.Request) {
+	var payload []model.SchEdit
+	defer req.Body.Close()
+	
+	err := json.NewDecoder(req.Body).Decode(&payload)
+	
+	if err != nil {
+		fmt.Println("Invalid input: " + err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(payload) == 0 {
+		http.Error(w, "No edits provided", http.StatusBadRequest)
+		return
+	}
+
+	results := make([]json.RawMessage, 0, len(payload))
+	for _, p := range payload {
+		jsonOut, err := trn.UpdateRnd(p.Gid, p.Plyrwn, p.Pf, p.Pa, p.Notes)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("gid %d: %s", p.Gid, err.Error()), http.StatusInternalServerError)
+			return
+		}
+		results = append(results, json.RawMessage(jsonOut))
+	}
+
+	var Ordernums [] int
+	var Gids [] int
+	call_ordnum := false
+	for _, p := range payload {
+		if (p.Ordnum == 0) {
+			break
+		}
+		call_ordnum = true
+		Ordernums = append(Ordernums, p.Ordnum)
+		Gids = append(Gids, p.Gid)
+	}
+	
+	for _, p := range payload {
+		var jsonOut []byte
+		var err error
+		if (p.OldMscAddAll1 != p.MscAddAll1) {
+			jsonOut, err = trn.AddRemoveMscEach(p.Gid, p.Plyr1, p.MscAddAll1, p.OldMscAddAll1)
+		}
+		if (p.OldMscAddAll2 != p.MscAddAll2) {
+			jsonOut, err = trn.AddRemoveMscEach(p.Gid, p.Plyr2, p.MscAddAll2, p.OldMscAddAll2)
+		}
+		if err != nil {
+			http.Error(w, fmt.Sprintf("AddRemoveMsc %s %s %s %s", p.Plyr1, p.MscAddAll1, p.OldMscAddAll1, err.Error()), http.StatusInternalServerError)
+			return
+		}
+		results = append(results, json.RawMessage(jsonOut))
+	}
+
+	if (call_ordnum) {
+		jsonOut, err := trn.UpdateOrdnums(Gids, Ordernums)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("gid %s", Gids, Ordernums, err.Error()), http.StatusInternalServerError)
+			return
+		}
+		results = append(results, json.RawMessage(jsonOut))
+	}
+
+	out, err := json.Marshal(results)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*") // for CORS if needed
+	w.WriteHeader(http.StatusOK)
+	w.Write(out)
+}
+
 func AddDeleteMsc(w http.ResponseWriter, req *http.Request) {
 	var payload model.AddDeleteMsc
 	defer req.Body.Close()

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"trnsch/db"
 	"trnsch/model"
+	"strings"
+	"sort"
 )
 
 func Get(trnId int) ([]byte, error) {
@@ -144,12 +146,12 @@ func GetRnd(trnId int, rnd int) ([]byte, error) {
 		"coalesce(m1.letters,''), coalesce(m2.letters,'') " +
 		"from (select g.id, min(gp1.plyrtm_id) plyr1, max(gp2.plyrtm_id) plyr2, " +
 		"	coalesce(g.ordr,999999) ordr, coalesce(g.plyrtm_wn,-1) plyrwn, " +
-		"	coalesce(g.pf,0) pf, coalesce(g.pa,0) pa, coalesce(g.notes,'') notes " +
+		"	coalesce(g.pf,0) pf, coalesce(g.pa,0) pa, coalesce(g.notes,'') notes, coalesce(g.has_stnd,'Y') has_stnd " +
 		"	from gms g inner join gms_plyrtm gp1 on gp1.gms_id = g.id " +
 		"	inner join gms_plyrtm gp2 on gp2.gms_id = g.id and gp1.plyrtm_id <> gp2.plyrtm_id " +
 		"	where tourn_id = ? and rnd = ? and gp1.id < gp2.id " +
 		"	group by g.id, coalesce(g.ordr,0), g.plyrtm_wn, coalesce(g.pf,0), coalesce(g.pa,0), " +
-		"	coalesce(g.notes,0) " +
+		"	coalesce(g.notes,0), coalesce(g.has_stnd,'Y') " +
 		"    ) a inner join plyrtm p1 on plyr1 = p1.id " +
 		"inner join gms_plyrtm gp1 on gp1.gms_id = a.id and gp1.plyrtm_id = p1.id " +
 		"inner join plyrtm p2 on plyr2 = p2.id " +
@@ -173,12 +175,12 @@ func GetRnd(trnId int, rnd int) ([]byte, error) {
 	defer rows.Close()
 
 	var gid, ordr, realOrdr, rec1, tie1, rec2, tie2 int
-	var notes, plyr1nm, plyr2nm, plyrwnnm, letter1, letter2 string
+	var notes, plyr1nm, plyr2nm, plyrwnnm, letter1, letter2, hasStnd string
 	assignOrdr := make(map[int]int)
 	var sch []model.Sch
 
 	for rows.Next() {
-		if err = rows.Scan(&gid, &plyr1, &plyr2, &ordr, &plyrwn, &pf, &pa, &notes,
+		if err = rows.Scan(&gid, &plyr1, &plyr2, &ordr, &plyrwn, &pf, &pa, &notes, &hasStnd,
 			&plyr1nm, &plyr2nm, &rec1, &tie1, &rec2, &tie2, &plyrwnnm, &realOrdr, &letter1, &letter2); err != nil {
 			return nil, err
 		}
@@ -202,6 +204,7 @@ func GetRnd(trnId int, rnd int) ([]byte, error) {
 		schTemp.Msc2 = mscArr[plyr2]
 		schTemp.Letter1 = letter1
 		schTemp.Letter2 = letter2
+		schTemp.HasStnd = hasStnd
 
 		if archGmeArr[plyr1] != "" {
 			schTemp.ArchNm = plyr1nm
@@ -275,6 +278,36 @@ func SchSwap(trnId int, rnd int, gid int, up bool) ([]byte, error) {
 	return jsonOut, nil
 }
 
+func UpdateOrdnums(gids [] int, ordrs [] int) ([]byte, error) {
+	for indx := 0; indx < len(gids); indx++ {
+		sql := "select ordr from gms where id = ?"
+		rows, err := db.DB.Query(sql, gids[indx])
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		var ordr int
+		for rows.Next() {
+			if err = rows.Scan(&ordr); err != nil {
+				return nil, err
+			}
+		}
+		if (ordr != ordrs[indx]) {
+			sql = "update gms set ordr = ? where id = ?"
+			params := []interface{}{ordrs[indx], gids[indx]}
+			_, err = db.ChangDB(sql, params)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	resp := model.Response{Msg: "ok"}
+	jsonOut, _ := json.MarshalIndent(resp, "", "  ")
+	return jsonOut, nil
+}
+
 func UpdateRnd(gid int, plyrwm int, pf int, pa int, notes string) ([]byte, error) {
 	sql := "select ordr from gms where id = ?"
 	rows, err := db.DB.Query(sql, gid)
@@ -299,6 +332,53 @@ func UpdateRnd(gid int, plyrwm int, pf int, pa int, notes string) ([]byte, error
 	}
 	resp := model.Response{Msg: "ok"}
 	jsonOut, _ := json.MarshalIndent(resp, "", "  ")
+	return jsonOut, nil
+}
+
+func AddRemoveMscEach(gid int, plyr int, mscStr string, oldMscStr string) ([]byte, error) {
+	sql := "select tourn_id, rnd from gms where id = ?"
+	rows, err := db.DB.Query(sql, gid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tournId, rnd int
+	for rows.Next() {
+		if err = rows.Scan(&tournId, &rnd); err != nil {
+			return nil, err
+		}
+	}
+	fmt.Println("trnd", tournId, rnd)
+	
+	var jsonOut []byte
+	tmpOldMscStr := ","+oldMscStr+","
+	mscArr := strings.Split(mscStr,",")
+	sort.Strings(mscArr)
+
+	prevMscArr := ""
+	for indx := 0; indx < len(mscArr); indx++ {
+		if (mscArr[indx] == prevMscArr) || (mscArr[indx] == ""){
+			continue
+		}
+		prevMscArr = mscArr[indx]
+		if strings.Contains(tmpOldMscStr, ","+mscArr[indx]+",") {
+			tmpOldMscStr = strings.ReplaceAll(tmpOldMscStr, ","+mscArr[indx]+",", ",")
+		} else {
+			jsonOut, err = AddDeleteMsc(tournId, rnd, plyr, mscArr[indx], 1)
+		}
+	}
+
+	oldMscArr := strings.Split(tmpOldMscStr, ",")
+	for indx := 0; indx < len(oldMscArr); indx++ {
+		if oldMscArr[indx] == "" {
+			continue
+		}
+		jsonOut, err = AddDeleteMsc(tournId, rnd, plyr, oldMscArr[indx], 0)
+	} 
+
+	resp := model.Response{Msg: "ok"}
+	jsonOut, _ = json.MarshalIndent(resp, "", "  ")
 	return jsonOut, nil
 }
 

@@ -70,8 +70,10 @@ var plyr_id_to_name map[int]string
 var plyr_id_arch map[int]int
 var plyr_id_arch_w map[int]int
 var plrsNameToId map[string]int
+var ConfNameToId map[string]int
 
 var stnds model.SchRes
+var arch_excl = ""
 
 func empty() {
 	plrs = nil
@@ -122,6 +124,7 @@ func empty() {
 	plyr_id_arch = nil
 	plyr_id_arch_w = nil
 	plrsNameToId = nil
+	ConfNameToId = nil
 	stnds = model.SchRes{}
 }
 
@@ -156,6 +159,7 @@ func BuildSchres(trnId int, rnd int) ([]byte, error) {
 	plyr_id_to_name = make(map[int]string)
 	plyr_id_arch = make(map[int]int)
 	plyr_id_arch_w = make(map[int]int)
+	ConfNameToId = make(map[string]int)
 	arch_wk_yt = false
 	HasAnArch = false
 
@@ -310,6 +314,7 @@ func BuildSchres(trnId int, rnd int) ([]byte, error) {
 			fmt.Println("abc", err)
 			return nil, err
 		}
+		ConfNameToId[conf] = cid
 		plyr_id_to_name[pid] = plyrtm
 		if sds%2 == 0 {
 			plyr_id_arch[pid] = prev_pid
@@ -702,7 +707,7 @@ func BuildSchres(trnId int, rnd int) ([]byte, error) {
 			if sorted_cndv[cndv_i][:ocn1] != prev1_cn {
 				prev1_cn = sorted_cndv[cndv_i][:ocn1]
 			}
-			cndv_to_plrs[sorted_cndv[cndv_i]] = sort_plrs(cndv_to_plrs[sorted_cndv[cndv_i]], dv_tbr_expnd, 0, true, false, false, false)
+			cndv_to_plrs[sorted_cndv[cndv_i]] = sort_plrs(cndv_to_plrs[sorted_cndv[cndv_i]], dv_tbr_expnd, 0, true, false, false, false, false)
 		}
 
 		prev1_cn = ""
@@ -801,6 +806,7 @@ func BuildSchres(trnId int, rnd int) ([]byte, error) {
 							v = fmt.Sprintf("(%d)", vint*-1)
 							if wk == maxwk {
 								wl = "L"
+								arch_excl += ";" + p
 							}
 						} else {
 							v = fmt.Sprintf("%d", vint)
@@ -820,6 +826,7 @@ func BuildSchres(trnId int, rnd int) ([]byte, error) {
 									v2 = fmt.Sprintf("(%d)", vint*-1)
 									if (wk == maxwk) && (wl == "") {
 										wl = "L"
+										arch_excl += ";" + p
 									}
 								} else {
 									v2 = fmt.Sprintf("%d", vint)
@@ -1265,13 +1272,20 @@ func tbr_exp(tbr_arr, tbr_bsc []string) []string {
 	return tbr_rslt
 }
 
-func sort_plrs(orig []string, tbr []string, ttl int, isd bool, add_to_g_ord bool, d_to_c bool, has_elm bool) []string {
+func sort_plrs(orig []string, tbr []string, ttl int, isd bool, add_to_g_ord bool, d_to_c bool, has_elm bool, wnarch bool) []string {
 	var new_p []string
 	var chs []string
 	var hh_cur []string
 
+	maxTms := 0
+	if wnarch {
+		for indx1 := 0; indx1 < len(orig); indx1++ {
+			maxTms += len(strings.Split(orig[indx1],";"))
+		}
+	}
+
 	frst_lp_strt := strings.Split(strings.Join(orig, "#"), "#")
-	if ttl == 0 {
+	if (ttl == 0)  {
 		ttl = len(orig)
 	}
 
@@ -1280,7 +1294,9 @@ func sort_plrs(orig []string, tbr []string, ttl int, isd bool, add_to_g_ord bool
 			g_string_ord = append(g_string_ord, tbr[tbr_i])
 		}
 	}
-	for len(new_p) < ttl {
+	
+	strong_break:
+	for len(new_p) < ttl || (wnarch && arch_wk_yt && len(new_p) < maxTms){
 		rsn := ""
 		tmp_rsn := ""
 		var remain []string
@@ -1325,6 +1341,9 @@ func sort_plrs(orig []string, tbr []string, ttl int, isd bool, add_to_g_ord bool
 				}
 			} else if (a == "o") || (a == "dv") || (a == "cm") || (a == "cn") {
 				tmp_rsn, chs = tbr_wlt(remain, a)
+				if (a == "o") && (len(new_p) >= ttl) && (nme_attr_int[chs[0]+";w;o"] <= nme_attr_int[chs[0]+";l;o"]) {
+					break strong_break
+				} 
 				//} else if strings.HasPrefix(a, "act") {
 				//	tmp_rsn, chs = tbr_act(remain, a)
 			} else if strings.HasPrefix(a, "gn") || strings.HasPrefix(a, "ot") || strings.HasPrefix(a, "sht") || strings.HasPrefix(a, "pts") || strings.HasPrefix(a, "so") || strings.HasPrefix(a, "nt") {
@@ -1378,6 +1397,7 @@ func sort_plrs(orig []string, tbr []string, ttl int, isd bool, add_to_g_ord bool
 		}
 		new_p = append(new_p, remain[0])
 		frst_lp_strt = Splice(frst_lp_strt, remain[0])
+
 		/*if d_to_c {
 			c_remain := plrs[remain[0]].cn
 			for c_ri := len(frst_lp_strt) - 1; (c_ri >= 0) && (c_ri < len(frst_lp_strt)); c_ri-- {
@@ -1413,15 +1433,15 @@ func CN(CN_orig []string, tbr []string, ttl int, isd bool, add_to_g_ord bool, d_
 				var CN_tmp []string
 				CN_tmp = append(CN_tmp, CN_orig[i])
 				CN_tmp = append(CN_tmp, CN_orig[j])
-				CN_tmp = sort_plrs(CN_tmp, tbr, 2, false, add_to_g_ord, d_to_c, has_elm)
+				CN_tmp = sort_plrs(CN_tmp, tbr, 2, false, add_to_g_ord, d_to_c, has_elm, false)
 				CN_wn = append(CN_wn, CN_tmp[0])
 				CN_ls = append(CN_ls, CN_tmp[1])
 			}
 			break
 		}
 	}
-	CN_wn = sort_plrs(CN_wn, tbr, ttl, isd, add_to_g_ord, d_to_c, has_elm)
-	CN_ls = sort_plrs(CN_ls, tbr, ttl, isd, add_to_g_ord, d_to_c, has_elm)
+	CN_wn = sort_plrs(CN_wn, tbr, ttl, isd, add_to_g_ord, d_to_c, has_elm, false)
+	CN_ls = sort_plrs(CN_ls, tbr, ttl, isd, add_to_g_ord, d_to_c, has_elm, false)
 	return append(CN_wn, CN_ls...)
 }
 
@@ -2431,7 +2451,7 @@ func lst_wk(wk int, dir string, plrs_all_str string, tbrk_arr []string) {
 }*/
 
 func gms(wk int, cndv_wc string, sorted_cndv []string, dv_tbr_arr []string) error {
-	cndvwc := strings.SplitN(cndv_wc, " ", 2)
+	cndvwc := strings.SplitN(cndv_wc, " ", 3)
 
 	if len(cndvwc) < 2 {
 		cndvwc = append(cndvwc, "2")
@@ -2633,12 +2653,15 @@ func gms_sht(wk int, cnordv string, wc int, srt_indxs []int, sorted_cndv []strin
 
 func stnd(wk int, cndv_wc string, sorted_cndv []string, cn_tbr_arr []string) {
 	var cndvwc []string
+	wnarch := false
 	if strings.HasPrefix(cndv_wc, "X") {
 		cndvwc = append(cndvwc, "cn", "-42")
 	} else {
-		cndvwc = strings.SplitN(cndv_wc, " ", 2)
+		cndvwc = strings.SplitN(cndv_wc, " ", 3)
 		if len(cndvwc) < 2 {
 			cndvwc = append(cndvwc, "2")
+		} else if (len(cndvwc) > 2) &&  (cndvwc[2] == "wnarch")	{
+			wnarch = true
 		}
 	}
 
@@ -2662,7 +2685,7 @@ func stnd(wk int, cndv_wc string, sorted_cndv []string, cn_tbr_arr []string) {
 		}
 		if curr != prev {
 			if prev != "" {
-				stnd_cn(wk, wc, HasT, srt_indxs, sorted_cndv, cn_tbr_arr, cndvwc[0], prev)
+				stnd_cn(wk, wc, HasT, srt_indxs, sorted_cndv, cn_tbr_arr, cndvwc[0], prev, wnarch)
 			}
 			prev = curr
 			srt_indxs = nil
@@ -2673,7 +2696,7 @@ func stnd(wk int, cndv_wc string, sorted_cndv []string, cn_tbr_arr []string) {
 		prev = "A"
 	}
 	if prev != "" {
-		stnd_cn(wk, wc, HasT, srt_indxs, sorted_cndv, cn_tbr_arr, cndvwc[0], prev)
+		stnd_cn(wk, wc, HasT, srt_indxs, sorted_cndv, cn_tbr_arr, cndvwc[0], prev, wnarch)
 		/*var sprsd []string
 		sprsd = append(sprsd, running_sht)
 		os.MkdirAll(dir+"stdn", os.ModePerm)
@@ -2685,7 +2708,7 @@ func stnd(wk int, cndv_wc string, sorted_cndv []string, cn_tbr_arr []string) {
 	}
 }
 
-func stnd_cn(wk int, wc int, HasT bool, srt_indxs []int, sorted_cndv []string, cn_tbr_arr []string, dvwc string, conf string) {
+func stnd_cn(wk int, wc int, HasT bool, srt_indxs []int, sorted_cndv []string, cn_tbr_arr []string, dvwc string, conf string, wnarch bool) {
 	var arr_dv []string
 	var arr_wc []string
 
@@ -2702,13 +2725,14 @@ func stnd_cn(wk int, wc int, HasT bool, srt_indxs []int, sorted_cndv []string, c
 
 	var tmp_dvwc []string
 	if dvwc != "CD" && !strings.HasPrefix(dvwc, "ACN") {
-		tmp_dvwc = sort_plrs(arr_dv, cn_tbr_arr, 0, false, true, false, false)
+		tmp_dvwc = sort_plrs(arr_dv, cn_tbr_arr, 0, false, true, false, false, false)
 	} else {
 		tmp_dvwc = CN(arr_dv, cn_tbr_arr, 0, false, true, false, false)
 	}
 
 	var tempConfStnd model.ConfStnd
 	tempConfStnd.Conf = conf
+	tempConfStnd.ConfId = ConfNameToId[conf]
 	tempType := ""
 	if (dvwc != "CD") && !strings.HasPrefix(dvwc, "ACN") {
 		tempType = "DV"
@@ -2750,19 +2774,40 @@ func stnd_cn(wk int, wc int, HasT bool, srt_indxs []int, sorted_cndv []string, c
 		}
 	}
 
-	tmp_dvwc = sort_plrs(arr_wc, cn_tbr_arr, wc, false, false, false, false)
-
-	for x := 0; x < len(tmp_dvwc) && ((x < wc) || (wc == -42)); x++ {
+	tmp_dvwc = sort_plrs(arr_wc, cn_tbr_arr, wc, false, false, false, false, wnarch)
+	
+	wc_add := 0
+	rnkAlt := 0
+	for x := 0; x < len(tmp_dvwc) && ((x < wc) || (wc == -42) || wnarch); x++ {
 		var tempRnkStnd model.RnkStnd
+
+		if (x >= wc) {
+			if (nme_attr_int[tmp_dvwc[x]+";w;arch"] > 0) && !strings.Contains(arch_excl + ";", ";" + tmp_dvwc[x] + ";") {
+				rnkAlt++
+				tempRnkStnd.RnkAlt = rnkAlt				
+				wc_add++
+				tempRnkStnd.Name = tmp_dvwc[x]
+			} else {
+				tempRnkStnd.Name = "(" + tmp_dvwc[x] + ")"
+			}
+		} else {
+			rnkAlt++
+			tempRnkStnd.RnkAlt = rnkAlt
+			tempRnkStnd.Name = tmp_dvwc[x]
+		}
+
 		tempRnkStnd.Rnk = x + 1
-		tempRnkStnd.Name = tmp_dvwc[x]
 		tmp_w := float64(nme_attr_int[tmp_dvwc[x]+";w;o"]) + float64(nme_attr_int[tmp_dvwc[x]+";t;o"])/2
 		tmp_l := float64(nme_attr_int[tmp_dvwc[x]+";l;o"]) + float64(nme_attr_int[tmp_dvwc[x]+";t;o"])/2
 		tempRnkStnd.Rec = PrettyFormat(tmp_w) + "--" + PrettyFormat(tmp_l)
 		tempRnkStnd.GFields = g_string_eval(tmp_dvwc[x])
+		tempRnkStnd.PlyrId = plrsNameToId[tmp_dvwc[x]]
 		tempRnkStnd.DvRsn = strings.Split(plr_rsn_dv[tmp_dvwc[x]][len(plr_rsn_dv[tmp_dvwc[x]])-1], "\n")
 		tempRnkStnd.CnRsn = strings.Split(plr_rsn_cn[tmp_dvwc[x]][len(plr_rsn_cn[tmp_dvwc[x]])-1], "\n")
 		tempConfStnd.WCRnkStnd = append(tempConfStnd.WCRnkStnd, tempRnkStnd)
+		if (wc_add == wc) {
+			break
+		}
 	}
 	stnds.ConfStnd = append(stnds.ConfStnd, tempConfStnd)
 }

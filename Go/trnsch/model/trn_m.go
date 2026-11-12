@@ -52,6 +52,13 @@ type SchEdit struct {
 	Pf     int    `json:"pf"`
 	Pa     int    `json:"pa"`
 	Notes  string `json:"notes"`
+	Ordnum int `json:"ordnum"`
+	Plyr1 int `json:"plyr1"`
+	Plyr2 int `json:"plyr2"`	
+	OldMscAddAll1 string `json:"oldMscAddAll1"`
+	OldMscAddAll2 string `json:"oldMscAddAll2"`
+    MscAddAll1 string `json:"mscAddAll1"`
+    MscAddAll2 string `json:"mscAddAll2"`
 }
 
 /////////////////////////////////////////////////
@@ -94,6 +101,8 @@ type ConfOOO struct {
 
 type RnkStnd struct {
 	Rnk     int      `json:"rnk"`
+	RnkAlt	int		 `json:"rnkAlt"`
+	PlyrId   int     `json:"plyrId"`
 	Name    string   `json:"name"`
 	Rec     string   `json:"rec"`
 	GFields []string `json:"g_fields"`
@@ -103,6 +112,7 @@ type RnkStnd struct {
 
 type ConfStnd struct {
 	Conf      string    `json:"conf"`
+	ConfId    int       `json:"confId"`
 	CNRnkStnd []RnkStnd `json:"cn"`
 	WCRnkStnd []RnkStnd `json:"wc"`
 	DVRnkStnd []RnkStnd `json:"dv"`
@@ -186,6 +196,7 @@ type Sch struct {
 	Letter2  string   `json:"letter2"`
 	ArchNm   string   `json:"arch_nm"`
 	ArchPts  string   `json:"arch_pts"`
+	HasStnd	 string	  `json:"has_stnd"`
 }
 
 type AddDeleteMsc struct {
